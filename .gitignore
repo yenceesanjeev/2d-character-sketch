@@ -1,0 +1,7 @@
+voice/
+*.mp4
+*.aiff
+.DS_Store
+/characters/
+/sketches/
+/out/

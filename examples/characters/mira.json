@@ -1,0 +1,3 @@
+{ "id": "mira", "name": "Mira", "description": "Mustard cardigan over a white tee, long dark hair, round steel glasses.",
+  "skin": "#c98f63", "hair": "#2a1f24", "style": "long", "glasses": "steel",
+  "top": "#d3a23a", "front": "open", "inner": "#f3efe6", "sleeve": 0.9, "legs": "#3e4a66", "shoe": "#f1ebdf", "resting": "happy" }

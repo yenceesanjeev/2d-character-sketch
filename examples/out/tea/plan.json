@@ -1,0 +1,740 @@
+{
+  "format": "character-sketch-plan/1",
+  "title": "Tea",
+  "fps": 24,
+  "frames": 299,
+  "cast": [
+    {
+      "id": "mira",
+      "name": "Mira"
+    },
+    {
+      "id": "theo",
+      "name": "Theo"
+    }
+  ],
+  "cuts": [
+    {
+      "id": "s01",
+      "shot": "s01",
+      "from": 0,
+      "to": 141,
+      "set": "home",
+      "staging": "WIDE",
+      "cast": {
+        "mira": {
+          "x": 320,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": false
+        },
+        "theo": {
+          "x": 640,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": true
+        }
+      },
+      "camera": [
+        0,
+        0,
+        960
+      ],
+      "backdrop": null,
+      "beats": [
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "face",
+          "arg": "happy"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "face",
+          "arg": "skeptical"
+        },
+        {
+          "id": "mira",
+          "at": 0.5,
+          "action": "face",
+          "arg": "happy"
+        },
+        {
+          "id": "mira",
+          "at": 0.5,
+          "action": "pose",
+          "arg": "offer"
+        },
+        {
+          "id": "mira",
+          "at": 0.5,
+          "action": "look",
+          "arg": "theo"
+        },
+        {
+          "id": "theo",
+          "at": 0.5,
+          "action": "look",
+          "arg": "mira"
+        },
+        {
+          "id": "mira",
+          "at": 3.9833333333333334,
+          "action": "pose",
+          "arg": "rest"
+        },
+        {
+          "id": "theo",
+          "at": 4.166666666666667,
+          "action": "face",
+          "arg": "skeptical"
+        },
+        {
+          "id": "theo",
+          "at": 4.166666666666667,
+          "action": "look",
+          "arg": "mira"
+        },
+        {
+          "id": "mira",
+          "at": 4.166666666666667,
+          "action": "look",
+          "arg": "theo"
+        }
+      ],
+      "punches": [],
+      "move": null,
+      "frame": "wide",
+      "on": [
+        "mira"
+      ]
+    },
+    {
+      "id": "s02",
+      "shot": "s02",
+      "from": 141,
+      "to": 199,
+      "set": "home",
+      "staging": "CLOSE",
+      "cast": {
+        "mira": {
+          "x": 320,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": false
+        },
+        "theo": {
+          "x": 640,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": true
+        }
+      },
+      "camera": [
+        155.08771929824562,
+        56.18999999999997,
+        329.8245614035088
+      ],
+      "backdrop": null,
+      "beats": [
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "face",
+          "arg": "happy"
+        },
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "look",
+          "arg": "theo"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "face",
+          "arg": "skeptical"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "look",
+          "arg": "mira"
+        },
+        {
+          "id": "mira",
+          "at": 0.25,
+          "action": "face",
+          "arg": "smug"
+        },
+        {
+          "id": "mira",
+          "at": 0.25,
+          "action": "look",
+          "arg": "theo"
+        },
+        {
+          "id": "theo",
+          "at": 0.25,
+          "action": "look",
+          "arg": "mira"
+        },
+        {
+          "id": "theo",
+          "at": 0.5499999999999998,
+          "action": "face",
+          "arg": "bored"
+        }
+      ],
+      "punches": [],
+      "move": null,
+      "frame": "close",
+      "on": [
+        "mira"
+      ]
+    },
+    {
+      "id": "s03",
+      "shot": "s03",
+      "from": 199,
+      "to": 239,
+      "set": "home",
+      "staging": "MEDIUM",
+      "cast": {
+        "mira": {
+          "x": 320,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": false
+        },
+        "theo": {
+          "x": 640,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": true
+        }
+      },
+      "camera": [
+        443.50877192982455,
+        79.67999999999998,
+        392.9824561403509
+      ],
+      "backdrop": null,
+      "beats": [
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "face",
+          "arg": "smug"
+        },
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "look",
+          "arg": "theo"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "face",
+          "arg": "bored"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "look",
+          "arg": "mira"
+        },
+        {
+          "id": "theo",
+          "at": 0.1999999999999993,
+          "action": "face",
+          "arg": "sideeye"
+        },
+        {
+          "id": "theo",
+          "at": 0.1999999999999993,
+          "action": "look",
+          "arg": "camera"
+        },
+        {
+          "id": "theo",
+          "at": 0.6999999999999993,
+          "action": "pose",
+          "arg": "sip"
+        }
+      ],
+      "punches": [],
+      "move": {
+        "type": "zoom",
+        "scale": 1.12
+      },
+      "frame": "medium",
+      "on": [
+        "theo"
+      ]
+    },
+    {
+      "id": "s04",
+      "shot": "s04",
+      "from": 239,
+      "to": 299,
+      "set": "home",
+      "staging": "GROUP",
+      "cast": {
+        "mira": {
+          "x": 320,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": false
+        },
+        "theo": {
+          "x": 640,
+          "y": 255.2,
+          "scale": 0.8,
+          "mirror": true
+        }
+      },
+      "camera": [
+        181.75438596491227,
+        55.64999999999998,
+        596.4912280701755
+      ],
+      "backdrop": null,
+      "beats": [
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "face",
+          "arg": "smug"
+        },
+        {
+          "id": "mira",
+          "at": 0,
+          "action": "look",
+          "arg": "theo"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "face",
+          "arg": "sideeye"
+        },
+        {
+          "id": "theo",
+          "at": 0,
+          "action": "look",
+          "arg": "camera"
+        },
+        {
+          "id": "theo",
+          "at": 0.25,
+          "action": "face",
+          "arg": "tired"
+        },
+        {
+          "id": "theo",
+          "at": 0.25,
+          "action": "look",
+          "arg": "mira"
+        },
+        {
+          "id": "theo",
+          "at": 0.25,
+          "action": "nod"
+        },
+        {
+          "id": "mira",
+          "at": 0.25,
+          "action": "look",
+          "arg": "theo"
+        },
+        {
+          "id": "mira",
+          "at": 0.5500000000000007,
+          "action": "face",
+          "arg": "laugh"
+        }
+      ],
+      "punches": [],
+      "move": null,
+      "angle": "ending",
+      "frame": "group",
+      "on": [
+        "mira",
+        "theo"
+      ]
+    }
+  ],
+  "lines": [
+    {
+      "id": "s01-l01",
+      "character": "mira",
+      "text": "I made you tea. It took four minutes and all of my patience.",
+      "startFrame": 12,
+      "endFrame": 92,
+      "cues": [
+        [
+          0,
+          0.03,
+          "X"
+        ],
+        [
+          0.03,
+          0.07,
+          "C"
+        ],
+        [
+          0.07,
+          0.11,
+          "B"
+        ],
+        [
+          0.11,
+          0.19,
+          "A"
+        ],
+        [
+          0.19,
+          0.25,
+          "C"
+        ],
+        [
+          0.25,
+          0.44,
+          "F"
+        ],
+        [
+          0.44,
+          1.08,
+          "B"
+        ],
+        [
+          1.08,
+          1.36,
+          "F"
+        ],
+        [
+          1.36,
+          1.43,
+          "B"
+        ],
+        [
+          1.43,
+          1.5,
+          "G"
+        ],
+        [
+          1.5,
+          1.64,
+          "E"
+        ],
+        [
+          1.64,
+          1.72,
+          "A"
+        ],
+        [
+          1.72,
+          1.78,
+          "B"
+        ],
+        [
+          1.78,
+          1.91,
+          "C"
+        ],
+        [
+          1.91,
+          2.12,
+          "B"
+        ],
+        [
+          2.12,
+          2.33,
+          "E"
+        ],
+        [
+          2.33,
+          2.4,
+          "G"
+        ],
+        [
+          2.4,
+          2.48,
+          "A"
+        ],
+        [
+          2.48,
+          2.56,
+          "C"
+        ],
+        [
+          2.56,
+          2.64,
+          "A"
+        ],
+        [
+          2.64,
+          2.82,
+          "C"
+        ],
+        [
+          2.82,
+          2.96,
+          "B"
+        ],
+        [
+          2.96,
+          3.17,
+          "C"
+        ],
+        [
+          3.17,
+          3.31,
+          "B"
+        ],
+        [
+          3.31,
+          3.35,
+          "X"
+        ]
+      ],
+      "wav": "voice/172d8697f2861eb4.wav"
+    },
+    {
+      "id": "s01-l02",
+      "character": "theo",
+      "text": "This is coffee.",
+      "startFrame": 100,
+      "endFrame": 123,
+      "cues": [
+        [
+          0,
+          0.03,
+          "X"
+        ],
+        [
+          0.03,
+          0.37,
+          "B"
+        ],
+        [
+          0.37,
+          0.65,
+          "E"
+        ],
+        [
+          0.65,
+          0.72,
+          "G"
+        ],
+        [
+          0.72,
+          0.93,
+          "B"
+        ],
+        [
+          0.93,
+          0.97,
+          "X"
+        ]
+      ],
+      "wav": "voice/6125d6003b93e4d0.wav"
+    },
+    {
+      "id": "s02-l01",
+      "character": "mira",
+      "text": "It identifies as tea.",
+      "startFrame": 147,
+      "endFrame": 181,
+      "cues": [
+        [
+          0,
+          0.02,
+          "X"
+        ],
+        [
+          0.02,
+          0.08,
+          "B"
+        ],
+        [
+          0.08,
+          0.2,
+          "C"
+        ],
+        [
+          0.2,
+          0.27,
+          "B"
+        ],
+        [
+          0.27,
+          0.41,
+          "C"
+        ],
+        [
+          0.41,
+          0.48,
+          "B"
+        ],
+        [
+          0.48,
+          0.62,
+          "C"
+        ],
+        [
+          0.62,
+          0.69,
+          "G"
+        ],
+        [
+          0.69,
+          0.76,
+          "C"
+        ],
+        [
+          0.76,
+          0.9,
+          "B"
+        ],
+        [
+          0.9,
+          0.97,
+          "C"
+        ],
+        [
+          0.97,
+          1.39,
+          "B"
+        ],
+        [
+          1.39,
+          1.43,
+          "X"
+        ]
+      ],
+      "wav": "voice/82b3379958879d99.wav"
+    },
+    {
+      "id": "s04-l01",
+      "character": "theo",
+      "text": "Fine. Good tea.",
+      "startFrame": 245,
+      "endFrame": 281,
+      "cues": [
+        [
+          0,
+          0.08,
+          "X"
+        ],
+        [
+          0.08,
+          0.13,
+          "G"
+        ],
+        [
+          0.13,
+          0.25,
+          "D"
+        ],
+        [
+          0.25,
+          0.53,
+          "B"
+        ],
+        [
+          0.53,
+          0.65,
+          "X"
+        ],
+        [
+          0.65,
+          0.74,
+          "B"
+        ],
+        [
+          0.74,
+          0.95,
+          "F"
+        ],
+        [
+          0.95,
+          1.44,
+          "B"
+        ],
+        [
+          1.44,
+          1.48,
+          "X"
+        ]
+      ],
+      "wav": "voice/c0ba64dcfb31d223.wav"
+    }
+  ],
+  "warnings": [],
+  "cutout": {
+    "cast": {
+      "mira": {
+        "id": "mira",
+        "name": "Mira",
+        "description": "Mustard cardigan over a white tee, long dark hair, round steel glasses.",
+        "skin": "#c98f63",
+        "hair": "#2a1f24",
+        "style": "long",
+        "glasses": "steel",
+        "top": "#d3a23a",
+        "front": "open",
+        "inner": "#f3efe6",
+        "sleeve": 0.9,
+        "legs": "#3e4a66",
+        "shoe": "#f1ebdf",
+        "resting": "happy",
+        "skinShade": "#a1724f",
+        "hairShade": "#22191d",
+        "topShade": "#a9822e",
+        "innerShade": "#c2bfb8",
+        "legsShade": "#323b52",
+        "shoeShade": "#c1bcb2",
+        "strand": "#3f2f36",
+        "head": [
+          49,
+          60
+        ],
+        "waist": 54
+      },
+      "theo": {
+        "id": "theo",
+        "name": "Theo",
+        "description": "Teal hoodie, fluffy ginger hair, always holding a mug.",
+        "skin": "#e8b894",
+        "hair": "#b5562b",
+        "style": "fluffy",
+        "top": "#3f8f8a",
+        "front": "hoodie",
+        "legs": "#5a5d66",
+        "resting": "skeptical",
+        "holds": {
+          "standing": "mug"
+        },
+        "skinShade": "#ba9376",
+        "hairShade": "#914522",
+        "topShade": "#32726e",
+        "inner": "#f1f2ee",
+        "innerShade": "#c1c2be",
+        "legsShade": "#484a52",
+        "shoe": "#3a332f",
+        "shoeShade": "#2e2926",
+        "strand": "#ff8141",
+        "head": [
+          49,
+          60
+        ],
+        "sleeve": 0.92,
+        "waist": 54
+      }
+    }
+  }
+}

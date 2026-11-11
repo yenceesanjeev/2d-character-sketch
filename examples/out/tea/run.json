@@ -1,0 +1,39 @@
+{
+  "sketchSha256": "95832026deb1272bbc5cfe898371f6f8cc7ba32cbc1e56b071cbe52eb3789e47",
+  "toolSha256": "89e22a1cfcea084cc8d631e805f78b8365fde29f4bc005746b364e783afa4753",
+  "frames": 299,
+  "duration": 12.458333333333334,
+  "size": [
+    1920,
+    1080
+  ],
+  "cuts": 4,
+  "lines": 4,
+  "voicedLines": 4,
+  "voice": {
+    "engine": "say",
+    "generated": 4,
+    "reused": 0,
+    "credits": 0,
+    "mouths": [
+      "rhubarb"
+    ]
+  },
+  "warnings": [],
+  "streams": [
+    {
+      "codec_type": "video",
+      "width": 1920,
+      "height": 1080,
+      "avg_frame_rate": "24/1",
+      "duration": "12.458333",
+      "nb_read_frames": "299"
+    },
+    {
+      "codec_type": "audio",
+      "avg_frame_rate": "0/0",
+      "duration": "12.458000",
+      "nb_read_frames": "584"
+    }
+  ]
+}

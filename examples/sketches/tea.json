@@ -1,0 +1,9 @@
+{ "title": "Tea", "set": "home", "cast": ["mira", "theo"],
+  "shots": [
+    { "frame": "wide", "lines": [
+      { "who": "mira", "say": "I made you tea. It took four minutes and all of my patience.", "face": "happy", "pose": "offer" },
+      { "who": "theo", "say": "This is coffee.", "face": "skeptical" } ] },
+    { "frame": "close", "on": "mira", "lines": [ { "who": "mira", "say": "It identifies as tea.", "face": "smug", "reactions": { "theo": "bored" } } ] },
+    { "frame": "medium", "on": "theo", "hold": 1.4, "zoom": 1.12, "acting": [ { "who": "theo", "at": 0.2, "face": "sideeye", "look": "camera" }, { "who": "theo", "at": 0.7, "pose": "sip" } ] },
+    { "frame": "group", "on": ["mira", "theo"], "end": "fade", "lines": [ { "who": "theo", "say": "Fine. Good tea.", "face": "tired", "do": "nod", "reactions": { "mira": "laugh" } } ] }
+  ] }
