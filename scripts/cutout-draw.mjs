@@ -154,7 +154,11 @@ export function kit(P) {
       if (side) { const lens = side.x < 0 ? lenses[0] : lenses.at(-1); glasses += line(colour, weight, `M${lens.x+Math.sign(side.x)*lens.w} ${EYE_Y-3}L${side.x} ${EYE_Y-1}`); }
     }
     const lift = (style.lift ?? []).map(([x, y, rx, ry, angle]) => `<ellipse cx="${x-s*6}" cy="${CY+y}" rx="${rx}" ry="${ry}" transform="rotate(${angle} ${x-s*6} ${CY+y})" fill="${P.hair}"/>`).join('');
-    const long = style.long ? `<path fill="${P.hair}" d="M${-R-6} ${CY-12}V8Q${-R-6} 24 ${-R+12} 24H${R-12}Q${R+6} 24 ${R+6} 8V${CY-12}Z"/>` : '';
+    // Long hair falls in two locks beside the jaw and leaves the neck clear. One block under the chin read as a beard.
+    // As the head turns, the lock on the side it faces narrows away and the one behind widens.
+    const lock = side => { const width = side === facing ? (R*.56+6)*Math.max(0, 1-Math.abs(s)*1.8) : R*.56+6+Math.abs(s)*R*.5, o = side*(R+6)-s*6, i = o-side*width;
+      return width < 6 ? '' : `<path fill="${P.hair}" d="M${o} ${CY-12}V6Q${o} 22 ${(o+i)/2} 22Q${i} 22 ${i} 8V${CY-12}Z"/>`; };
+    const long = style.long ? lock(-1)+lock(1) : '';
     const bun = style.bun ? `<circle cx="${-s*12}" cy="${CY-RY-9}" r="15" fill="${P.hair}"/>` : '';
     const back = style.bald ? '' : `${long}${bun}<ellipse cx="${-s*9}" cy="${CY-25}" rx="${R+style.rx}" ry="${style.ry}" fill="${P.hair}"/>${lift}`;
     const sides = fill => `<ellipse cx="${-facing*R}" cy="${CY-24}" rx="${7+50*Math.abs(s)}" ry="${40+6*Math.abs(s)}" fill="${fill}"/>`+

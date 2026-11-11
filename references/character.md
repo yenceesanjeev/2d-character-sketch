@@ -71,7 +71,7 @@ Everything is drawn by code, so the design is kept to what code draws well. Earl
 - **Colour:** flat fills, each edged in a darker tone of itself. No black outlines.
 - **Hair:** one smooth shape with a fringe. Volume comes from the silhouette, not from curls.
 
-Looks that were tried and rejected, so do not steer back to them: detailed outlined cutouts ("too robotic"), white eyes that touch, round heads with wide bodies ("too chubby"), rings of curls, and dark collar shapes at the neck.
+Looks that were tried and rejected, so do not steer back to them: detailed outlined cutouts ("too robotic"), white eyes that touch, round heads with wide bodies ("too chubby"), rings of curls, dark collar shapes at the neck, and long hair drawn as one block under the chin ("it looks like a beard"). Long hair now falls in two locks beside the jaw and leaves the neck clear.
 
 ## Making characters different from each other
 
@@ -90,6 +90,7 @@ Open `characters/<id>.sheet.png` and check each of these. They all caught real f
 
 - **Top silhouette.** Does the hair read as hair in all four turns? Lumps on top can read as a crown.
 - **Hair covers the head's edge.** No skin-coloured sliver between hair and background.
+- **Nothing dark under the chin.** Hair, a hood or a dark inner top directly below the jaw can read as a beard. The neck should show.
 - **Side view.** The far ear should be hidden, and glasses should still sit on the nose.
 - **Resting face.** The turnaround, the large head and the cast picture all wear it. Does it match the personality you were asked for?
 - **Colour.** Can you tell the top from the skin and the hair at thumbnail size? Is the inner tee visible on an `open` top?

@@ -26,7 +26,7 @@ import { FPS, W, H, bodies, createCast, createScene, expressions, hairStyles, po
 import { builtIn } from './cutout-sets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const VERSION = '0.1.0';
+const VERSION = '0.1.1';
 const sha = (input) => createHash('sha256').update(input).digest('hex');
 const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const onPath = (name) => (process.env.PATH ?? '').split(delimiter).some((dir) => dir && existsSync(join(dir, name)));

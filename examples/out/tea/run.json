@@ -1,6 +1,6 @@
 {
   "sketchSha256": "95832026deb1272bbc5cfe898371f6f8cc7ba32cbc1e56b071cbe52eb3789e47",
-  "toolSha256": "89e22a1cfcea084cc8d631e805f78b8365fde29f4bc005746b364e783afa4753",
+  "toolSha256": "c4b48c6563a5879ee110a12f3e0e977c419b8b89bcfbab606b54045393a76bdc",
   "frames": 299,
   "duration": 12.458333333333334,
   "size": [
@@ -12,8 +12,8 @@
   "voicedLines": 4,
   "voice": {
     "engine": "say",
-    "generated": 4,
-    "reused": 0,
+    "generated": 0,
+    "reused": 4,
     "credits": 0,
     "mouths": [
       "rhubarb"
