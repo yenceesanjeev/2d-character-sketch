@@ -100,12 +100,25 @@ Add `--draft` for a fast half-size render. The file formats are documented in [r
 
 ## Voice
 
+The default is free. Tell your agent which voice to use ("use OpenVoice", "use ElevenLabs", "use Sarvam") and it switches.
+
 | Engine | Cost | Notes |
 | --- | --- | --- |
 | macOS `say` | Free | The default on a Mac. Robotic, but good for timing. |
-| None | Free | The default elsewhere. Lines play silent with captions. |
+| OpenVoice | Free, local | Optional install of about 2 GB (`bash scripts/install-openvoice.sh`, needs [uv](https://docs.astral.sh/uv/)). Five English voices from MeloTTS, the speech model of OpenVoice V2. |
+| ElevenLabs | Paid | Needs your API key and a voice id per character. |
+| Sarvam | Paid | Needs your API key and a speaker per character. Indian English and ten Indian languages. |
+| None | Free | Lines play silent with captions. |
 | Your own recordings | Free | Name an audio file on any line. |
-| ElevenLabs | Paid | Opt-in. Needs your API key and an explicit credit cap for each run. |
+
+For a paid voice, put your key in a file named `.env.local` in your working folder (and list that file in `.gitignore`), or in `~/.2d-character-sketch/keys.env` to cover every project:
+
+```
+ELEVENLABS_API_KEY=your-key
+SARVAM_API_KEY=your-key
+```
+
+The tool never prints a key, refuses a key file that git is not ignoring, and sends nothing to a paid service until you pass a cap on the characters of text it may send (`--max-chars`). Recordings are kept, so an unchanged line is never charged twice.
 
 Mouth shapes match the spoken sounds when [Rhubarb Lip Sync](https://github.com/DanielSWolf/rhubarb-lip-sync) is installed. Without it, mouths open and close with the loudness of the recording.
 
@@ -119,7 +132,7 @@ You are responsible for the licence terms of whichever voice you use, including 
 - Three props can be held: phone, mug and pen.
 - One camera angle. Framings crop and zoom the same flat drawing.
 - Up to three characters frame cleanly.
-- The ElevenLabs path has not been run end to end. Treat your first paid run as a test and start with one short line.
+- The ElevenLabs and Sarvam paths have not been run end to end; only their safety checks were tested. Treat your first paid run as a test and start with one short line.
 - Tested on macOS only so far.
 
 ## Files
@@ -130,6 +143,7 @@ You are responsible for the licence terms of whichever voice you use, including 
 | `references/` | The character fields and the sketch file format |
 | `scripts/sketch.mjs` | The command-line tool |
 | `scripts/cutout-draw.mjs`, `scripts/cutout-sets.mjs` | The drawing code: characters, expressions, poses and rooms |
+| `scripts/install-openvoice.sh`, `scripts/openvoice_tts.py` | The optional free local voice: its installer and the script that speaks |
 | `scripts/sketch.test.mjs` | Tests. Run them with `node --test scripts/sketch.test.mjs` |
 | `version.json` | Which snapshot this is |
 | `examples/` | Two characters, one sketch and their rendered output |

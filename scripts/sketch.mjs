@@ -9,24 +9,25 @@
 //   node sketch.mjs sheet [id ...]                 draw characters/<id>.sheet.png (all characters if none named)
 //   node sketch.mjs say <id> "words" [options]     one character saying one line -> out/say-<id>-<first words>/sketch.mp4
 //   node sketch.mjs render <sketch.json> [options] a whole sketch -> out/<name>/sketch.mp4 and a contact sheet
-//   node sketch.mjs voices                         list the free voices on this machine
+//   node sketch.mjs voices                         list the voices each engine offers
 //   node sketch.mjs export <folder>                copy this skill, complete, to another folder
 //
 // Options: --dir <workspace> (default: current folder)   --draft (half size, faster, written to out/<name>-draft)
-//          --voice say|elevenlabs|none   --credits <max ElevenLabs credits for this run>
+//          --voice say|openvoice|elevenlabs|sarvam|none
+//          --max-chars <n>   the most characters of text a paid voice may be sent in this run
 //          --face <expression> --pose <pose> --frame wide|medium|close --set <room>   (say only)
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, realpathSync } from 'node:fs';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { basename, delimiter, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FPS, W, H, bodies, createCast, createScene, expressions, hairStyles, poseOf, table } from './cutout-draw.mjs';
 import { builtIn } from './cutout-sets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const VERSION = '0.1.1';
+const VERSION = '0.2.0';
 const sha = (input) => createHash('sha256').update(input).digest('hex');
 const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const onPath = (name) => (process.env.PATH ?? '').split(delimiter).some((dir) => dir && existsSync(join(dir, name)));
@@ -240,16 +241,48 @@ async function measure(wav) {
   return { duration, cues: await cuesFromLoudness(wav), cuesFrom: 'loudness' };
 }
 
+// API keys for the paid voices. A key comes from the environment, or from a key file the user made:
+// .env.local or .env in the workspace, or ~/.2d-character-sketch/keys.env for every project. The value
+// is never printed, and a key file inside a git repository is refused unless git ignores it.
+const KEY_NAMES = { elevenlabs: 'ELEVENLABS_API_KEY', sarvam: 'SARVAM_API_KEY' };
+async function findKey(workspace, name) {
+  if (process.env[name]?.trim()) return { value: process.env[name].trim(), from: 'the environment' };
+  for (const file of [join(workspace, '.env.local'), join(workspace, '.env'), join(homedir(), '.2d-character-sketch', 'keys.env')]) {
+    const text = await readFile(file, 'utf8').catch(() => null);
+    const row = text?.split('\n').map((line) => line.match(/^\s*(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*?)\s*$/)).find((match) => match?.[1] === name);
+    const value = row?.[2].replace(/^(['"])(.*)\1$/, '$2');
+    if (!value) continue;
+    if (file.startsWith(workspace)) {
+      const inRepo = await run('git', ['-C', workspace, 'rev-parse', '--is-inside-work-tree']).then(() => true, () => false);
+      const ignored = inRepo && (await run('git', ['-C', workspace, 'check-ignore', '-q', file]).then(() => true, () => false));
+      if (inRepo && !ignored) throw new Error(`${file} holds ${name} but git does not ignore that file, so the key could be committed. Add "${basename(file)}" to .gitignore, then run again.`);
+    }
+    return { value, from: file };
+  }
+  return null;
+}
+
+// The free local voice: MeloTTS, the speech model of OpenVoice V2, installed by install-openvoice.sh.
+const OPENVOICE_VOICES = ['EN-US', 'EN-BR', 'EN_INDIA', 'EN-AU', 'EN-Default'];
+const openvoiceHome = () => process.env.OPENVOICE_HOME ?? join(homedir(), '.2d-character-sketch', 'openvoice');
+const openvoiceReady = () => existsSync(join(openvoiceHome(), 'venv/bin/python')) && existsSync(join(openvoiceHome(), 'ready'));
+const ENGINES = ['say', 'openvoice', 'elevenlabs', 'sarvam', 'none'];
+const defaultEngine = () => (process.platform === 'darwin' && onPath('say') ? 'say' : openvoiceReady() ? 'openvoice' : 'none');
+
 // Get a recording and mouth shapes for every line. Recordings are kept in voice/ under a name made from
 // the words, the voice and the engine, so an unchanged line is never generated (or paid for) twice.
 async function speak(workspace, lines, specs, engine, options) {
   const folder = join(workspace, 'voice'), installed = engine === 'say' ? await sayVoices() : [];
-  const order = Object.keys(specs), receipt = { engine, generated: 0, reused: 0, credits: 0 };
+  const order = Object.keys(specs), receipt = { engine, generated: 0, reused: 0, characters: 0, credits: 0 };
+  const paidName = { elevenlabs: 'ElevenLabs', sarvam: 'Sarvam' }[engine];
   const voiceOf = (id) => {
     const saved = specs[id].voice?.[engine];
-    if (engine === 'elevenlabs') {
-      if (!saved) throw new Error(`characters/${id}.json needs "voice": { "elevenlabs": "<voice id>" } before ElevenLabs can speak for ${id}.`);
-      return saved;
+    if (engine === 'elevenlabs' && !saved) throw new Error(`characters/${id}.json needs "voice": { "elevenlabs": "<voice id>" } before ElevenLabs can speak for ${id}.`);
+    if (engine === 'sarvam' && !saved) throw new Error(`characters/${id}.json needs "voice": { "sarvam": "<speaker>" } before Sarvam can speak for ${id}. Speakers are listed at https://docs.sarvam.ai/api/api-guides-tutorials/text-to-speech/voices`);
+    if (paidName) return saved;
+    if (engine === 'openvoice') {
+      if (saved && !OPENVOICE_VOICES.includes(saved)) throw new Error(`"${saved}" is not an openvoice voice. Choose from: ${OPENVOICE_VOICES.join(', ')}`);
+      return saved ?? OPENVOICE_VOICES[order.indexOf(id) % OPENVOICE_VOICES.length];
     }
     if (saved && !installed.some((voice) => voice.name === saved)) throw new Error(`"${saved}" is not a voice on this machine. Run "sketch.mjs voices" to list them.`);
     const usable = SAY_ORDER.filter((name) => installed.some((voice) => voice.name === name));
@@ -263,32 +296,57 @@ async function speak(workspace, lines, specs, engine, options) {
       jobs.push({ line, engine: 'file', voice: sha(await readFile(source)).slice(0, 12), source });
     } else if (engine !== 'none') jobs.push({ line, engine, voice: voiceOf(line.who) });
   }
-  for (const job of jobs) job.stem = join(folder, sha([job.engine, job.voice, options.model, job.line.say].join('\n')).slice(0, 16));
-  const missing = jobs.filter((job) => !existsSync(job.stem + '.json'));
-  if (engine === 'elevenlabs') {
-    const paid = missing.filter((job) => job.engine === 'elevenlabs'), need = paid.reduce((sum, job) => sum + job.line.say.length, 0);
-    if (paid.length && !process.env.ELEVENLABS_API_KEY) throw new Error('Set ELEVENLABS_API_KEY in the environment to use ElevenLabs. Never write the key into a file.');
-    if (paid.length && !(options.credits >= need))
-      throw new Error(`${paid.length} line(s) need about ${need} ElevenLabs credits (one per character, an estimate). Ask the user, then pass --credits ${need} or more. Nothing was sent.`);
+  for (const job of jobs) job.stem = join(folder, sha([job.engine, job.voice, job.engine === 'file' ? '' : options.model, job.line.say].join('\n')).slice(0, 16));
+  const missing = jobs.filter((job) => !existsSync(job.stem + '.json')), toMake = missing.filter((job) => job.engine === engine);
+  const scratch = (job, ext) => join(tmpdir(), `sketch-${process.pid}-${basename(job.stem)}${ext}`);
+  let key = null;
+  if (paidName && toMake.length) {
+    // Nothing is sent to a paid service until the key is found and the user's cap covers the text.
+    const need = toMake.reduce((sum, job) => sum + job.line.say.length, 0), long = toMake.find((job) => job.line.say.length > 2500);
+    if (long) throw new Error(`${long.line.id} is ${long.line.say.length} characters. Keep a line under 2500.`);
+    key = await findKey(workspace, KEY_NAMES[engine]);
+    if (!key) throw new Error(`No ${KEY_NAMES[engine]} was found. The user adds it themselves, as one line "${KEY_NAMES[engine]}=..." in .env.local in the workspace (ignored by git) or in ~/.2d-character-sketch/keys.env. Do not ask them to paste the key into the chat.`);
+    if (!(options.maxChars >= need))
+      throw new Error(`${toMake.length} line(s) would send ${need} characters of text to ${paidName}, which charges by the character. Tell the user that number, and after they agree pass --max-chars ${need} or more. Nothing was sent.`);
+  }
+  if (engine === 'openvoice' && toMake.length) {
+    if (!openvoiceReady()) throw new Error(`The openvoice voice is not installed in ${openvoiceHome()}. It is optional (about 2 GB). If the user wants it, run: bash ${join(HERE, 'install-openvoice.sh')}`);
+    // One Python run speaks every missing line, so the model is loaded once.
+    const list = scratch(toMake[0], '.jobs.json');
+    await writeFile(list, JSON.stringify(toMake.map((job) => ({ id: job.line.id, text: job.line.say.replace(/\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim(), speaker: job.voice, speed: 1, out: (job.made = scratch(job, '.ov.wav')) }))));
+    await run(join(openvoiceHome(), 'venv/bin/python'), [join(HERE, 'openvoice_tts.py'), list]);
+    await rm(list, { force: true });
   }
   if (missing.length) await mkdir(folder, { recursive: true });
   for (const job of missing) {
-    const wav = job.stem + '.wav', scratch = join(tmpdir(), `sketch-${process.pid}-${basename(job.stem)}`);
-    let source = job.source, cost = null;
-    if (job.engine === 'say') { source = scratch + '.aiff'; await run('say', ['-v', job.voice, '-o', source], job.line.say); }
+    const wav = job.stem + '.wav';
+    let source = job.source ?? job.made, cost = null;
+    if (job.engine === 'say') { source = scratch(job, '.aiff'); await run('say', ['-v', job.voice, '-o', source], job.line.say); }
     if (job.engine === 'elevenlabs') {
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(job.voice)}?output_format=mp3_44100_128`, {
-        method: 'POST', headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY.trim(), 'content-type': 'application/json' },
+        method: 'POST', headers: { 'xi-api-key': key.value, 'content-type': 'application/json' },
         body: JSON.stringify({ text: job.line.say, model_id: options.model, voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
       });
       if (!response.ok) throw new Error(`ElevenLabs refused ${job.line.id} (${response.status}): ${(await response.text()).slice(0, 200)}. Lines already generated are kept.`);
-      source = scratch + '.mp3'; cost = Number(response.headers.get('character-cost')) || job.line.say.length;
+      source = scratch(job, '.mp3'); cost = Number(response.headers.get('character-cost')) || null;
       await writeFile(source, Buffer.from(await response.arrayBuffer()));
+    }
+    if (job.engine === 'sarvam') {
+      const [model, language] = options.model.split(' ');
+      const response = await fetch('https://api.sarvam.ai/text-to-speech', {
+        method: 'POST', headers: { 'api-subscription-key': key.value, 'content-type': 'application/json' },
+        body: JSON.stringify({ text: job.line.say, language_code: language, model, speaker: job.voice, speech_sample_rate: 48000, output_audio_codec: 'wav' }),
+      });
+      const body = await response.json().catch(() => null);
+      if (!response.ok || !body?.audios?.[0]) throw new Error(`Sarvam refused ${job.line.id} (${response.status}): ${String(body?.error?.message ?? 'no audio came back').slice(0, 200)}. Lines already generated are kept.`);
+      source = scratch(job, '.wav');
+      await writeFile(source, Buffer.from(body.audios[0], 'base64'));
     }
     await run('ffmpeg', ['-v', 'error', '-y', '-i', source, '-ac', '1', '-ar', '48000', wav]);
     if (source !== job.source) await rm(source, { force: true });
-    await writeFile(job.stem + '.json', JSON.stringify({ engine: job.engine, voice: job.voice, text: job.line.say, credits: cost, ...(await measure(wav)) }, null, 2) + '\n');
-    receipt.generated++; receipt.credits += cost ?? 0;
+    const sent = paidName && job.engine === engine ? job.line.say.length : 0;
+    await writeFile(job.stem + '.json', JSON.stringify({ engine: job.engine, voice: job.voice, text: job.line.say, characters: sent, credits: cost, ...(await measure(wav)) }, null, 2) + '\n');
+    receipt.generated++; receipt.characters += sent; receipt.credits += cost ?? 0;
   }
   receipt.reused = jobs.length - missing.length;
   const voiced = {};
@@ -438,11 +496,12 @@ function caption(plan, clock, specs) {
 async function build(workspace, sketch, name, options) {
   const specs = await loadCharacters(workspace);
   const { custom } = check(sketch, specs);
-  const engine = options.voice ?? sketch.voice ?? (process.platform === 'darwin' && onPath('say') ? 'say' : 'none');
-  if (!['say', 'elevenlabs', 'none'].includes(engine)) throw new Error('voice must be say, elevenlabs or none');
-  if (engine === 'say' && !(process.platform === 'darwin' && onPath('say'))) throw new Error('The "say" voice only exists on a Mac. Use --voice none, --voice elevenlabs, or give lines an "audio" file.');
-  const model = sketch.elevenlabsModel ?? 'eleven_v4';
-  const { voiced, receipt } = await speak(workspace, linesOf(sketch), specs, engine, { credits: options.credits, model });
+  const engine = options.voice ?? sketch.voice ?? defaultEngine();
+  if (!ENGINES.includes(engine)) throw new Error(`voice must be one of: ${ENGINES.join(', ')}`);
+  if (engine === 'say' && !(process.platform === 'darwin' && onPath('say'))) throw new Error('The "say" voice only exists on a Mac. Use --voice none, openvoice, elevenlabs or sarvam, or give lines an "audio" file.');
+  // What else decides how a line sounds, so it is part of the name a recording is kept under.
+  const model = engine === 'elevenlabs' ? (sketch.elevenlabsModel ?? 'eleven_v4') : engine === 'sarvam' ? `${sketch.sarvamModel ?? 'bulbul:v4-flash'} ${sketch.language ?? 'en-IN'}` : '';
+  const { voiced, receipt } = await speak(workspace, linesOf(sketch), specs, engine, { maxChars: options['max-chars'], model });
   const plan = compile(sketch, specs, voiced);
   const out = join(workspace, 'out', options.draft ? name + '-draft' : name), size = options.draft ? [W, H] : [W * 2, H * 2];
   await mkdir(out, { recursive: true });
@@ -510,14 +569,14 @@ async function build(workspace, sketch, name, options) {
   await writeFile(join(out, 'run.json'), JSON.stringify({ sketchSha256: sha(JSON.stringify(sketch)), toolSha256: sha(await readFile(fileURLToPath(import.meta.url))),
     frames: plan.frames, duration, size, cuts: plan.cuts.length, lines: plan.lines.length, voicedLines: spoken.length, voice: receipt, warnings: plan.warnings, streams }, null, 2) + '\n');
   console.log(`${plan.cuts.length} shot(s), ${plan.lines.length} line(s), ${duration.toFixed(1)} s, voice: ${engine}` +
-    (engine === 'none' ? '' : ` (${receipt.generated} new, ${receipt.reused} reused${receipt.credits ? `, ${receipt.credits} credits` : ''})`));
+    (engine === 'none' ? '' : ` (${receipt.generated} new, ${receipt.reused} reused${receipt.characters ? `, ${receipt.characters} characters sent` : ''}${receipt.credits ? `, ${receipt.credits} credits charged` : ''})`));
   for (const warning of plan.warnings) console.log(`warning: ${warning}`);
   console.log(`look first: ${join(out, 'contact-sheet.png')}`);
   console.log(`video:      ${output}`);
 }
 
 // ---- Commands -----------------------------------------------------------------------------------------
-async function doctor() {
+async function doctor(workspace) {
   let ok = true;
   const [major] = process.versions.node.split('.').map(Number);
   const row = (good, name, note) => { console.log(`${good ? 'ok     ' : 'MISSING'}  ${name}${note ? '  ' + note : ''}`); };
@@ -526,7 +585,11 @@ async function doctor() {
   for (const tool of ['rsvg-convert', 'ffmpeg', 'ffprobe']) { const found = onPath(tool); row(found, tool, found ? '' : INSTALL[tool]); ok &&= found; }
   const voices = await sayVoices();
   console.log(`${voices.length ? 'ok     ' : 'no     '}  free voice (macOS say)${voices.length ? '' : '  Sketches render silent with captions, or use ElevenLabs or your own recordings.'}`);
-  console.log(`${process.env.ELEVENLABS_API_KEY ? 'ok     ' : 'no     '}  ELEVENLABS_API_KEY${process.env.ELEVENLABS_API_KEY ? '  Paid; used only with --voice elevenlabs and --credits.' : '  Optional, paid.'}`);
+  console.log(`${openvoiceReady() ? 'ok     ' : 'no     '}  free local voice (openvoice)${openvoiceReady() ? '' : '  Optional, about 2 GB. Install only if the user asks: bash scripts/install-openvoice.sh'}`);
+  for (const [engine, name] of Object.entries(KEY_NAMES)) {
+    const key = await findKey(workspace, name).catch((error) => ({ problem: error.message }));
+    console.log(`${key?.value ? 'ok     ' : 'no     '}  ${name}${key?.value ? `  found in ${key.from}. Paid; used only with --voice ${engine} and --max-chars.` : key?.problem ? '  ' + key.problem : '  Optional, paid.'}`);
+  }
   console.log(`${rhubarbPath() ? 'ok     ' : 'no     '}  Rhubarb Lip Sync${rhubarbPath() ? '' : '  Optional. Without it mouths follow loudness instead of the sounds spoken.'}`);
   if (!ok) throw new Error('Install what is marked MISSING, then run doctor again.');
 }
@@ -538,7 +601,8 @@ function parse(argv) {
     else if (argv[i] === '--draft') flags.draft = true;
     else flags[argv[i].slice(2)] = argv[++i];
   }
-  if (flags.credits !== undefined) flags.credits = Number(flags.credits);
+  if (flags.credits !== undefined) flags['max-chars'] ??= flags.credits;   // the first release's name for the same cap
+  if (flags['max-chars'] !== undefined) flags['max-chars'] = Number(flags['max-chars']);
   return { flags, rest };
 }
 
@@ -562,11 +626,14 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
 const { flags, rest: [mode, ...args] } = parse(process.argv.slice(2));
 const workspace = resolve(flags.dir ?? '.');
 try {
-  if (mode === 'doctor') await doctor();
+  if (mode === 'doctor') await doctor(workspace);
   else if (mode === 'sheet') await sheets(workspace, args);
   else if (mode === 'voices') {
     const voices = await sayVoices();
-    console.log(voices.length ? voices.filter((voice) => voice.locale.startsWith('en')).map((voice) => `${voice.name}  (${voice.locale})`).join('\n') + `\n${voices.length} voices in all languages; these are the English ones.` : 'No free voices here: the "say" voice needs a Mac.');
+    console.log('say (free, Mac): ' + (voices.length ? voices.filter((voice) => voice.locale.startsWith('en')).map((voice) => voice.name).join(', ') + `. English ones shown; ${voices.length} in all languages.` : 'not available here.'));
+    console.log(`openvoice (free, local): ${openvoiceReady() ? OPENVOICE_VOICES.join(', ') : 'not installed. Optional: bash scripts/install-openvoice.sh'}`);
+    console.log('elevenlabs (paid): use a voice id from your ElevenLabs voice library.');
+    console.log('sarvam (paid): speakers are listed at https://docs.sarvam.ai/api/api-guides-tutorials/text-to-speech/voices');
   } else if (mode === 'say' && args.length >= 2) {
     const [id, ...words] = args;
     await build(workspace, { title: `${id} says`, set: flags.set ?? 'plain', cast: [id], captions: 'auto',

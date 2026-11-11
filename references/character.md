@@ -54,7 +54,7 @@ Colours are six-digit hex, like `#7d8449`. Each fill has an edge colour named `<
 | `shoe` | Shoe colour | hex (`#3a332f`) |
 | `resting` | The face they wear when nothing else is directed | any expression (`neutral`) |
 | `holds` | Something always in their hand, set separately for standing and seated | `{ "standing": "mug" }`, `{ "seated": "pen" }` or both keys. Props: `phone`, `mug`, `pen` |
-| `voice` | Their voice. The `say` name must match a name from `sketch.mjs voices` exactly. | `{ "say": "Daniel", "elevenlabs": "<voice id>" }` |
+| `voice` | Their voice, one entry per engine you use. The `say` name must match a name from `sketch.mjs voices` exactly. | `{ "say": "Daniel", "openvoice": "EN-BR", "elevenlabs": "<voice id>", "sarvam": "<speaker>" }` |
 
 `front` in practice: `tee` is a plain top. `shirt` adds a button line. `open` is a jacket, cardigan or overshirt over an inner tee. `hoodie` adds a hood, pocket and drawstrings. Every top ends at the hip, so a long coat comes out as a jacket.
 

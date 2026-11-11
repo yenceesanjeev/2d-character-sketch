@@ -38,7 +38,8 @@ Render it with `node SKILL/scripts/sketch.mjs render sketches/tea.json --draft`,
 | `set` | The room: `plain`, `home`, `park`, `office`, `table`, or the path of an SVG backdrop. Default `plain`. |
 | `cast` | Character ids from screen left to screen right. Everyone stays in place for the whole sketch. |
 | `shots` | The shots, in order. |
-| `voice` | `say`, `elevenlabs` or `none`. The `--voice` option overrides it. |
+| `voice` | `say`, `openvoice`, `elevenlabs`, `sarvam` or `none`. The `--voice` option overrides it. |
+| `language` | The language Sarvam speaks, such as `en-IN` or `hi-IN`. Default `en-IN`. Other engines ignore it. |
 | `captions` | `true` always, `false` never, or `"auto"` (the default): only on lines with no recording. |
 
 ### Rooms
@@ -142,26 +143,52 @@ Check pauses before punchlines, and that silent shots are long enough to read (a
 
 ## Voice
 
-Recordings are kept in `voice/` under a name made from the words, the voice and the engine. Rendering again reuses them. Changing a line's words makes a new recording for that line only.
+Recordings are kept in `voice/` under a name made from the words, the voice and the engine. Rendering again reuses them. Changing a line's words makes a new recording for that line only, so a paid line is never charged twice.
 
-| Engine | Cost | Notes |
-| --- | --- | --- |
-| `say` | Free | Mac only. The default there. Set one per character with `"voice": { "say": "Daniel" }`, using the exact name that `sketch.mjs voices` prints. Plain speaking voices that are usually installed: Samantha, Kathy, Karen and Moira (women), Daniel, Fred, Ralph and Albert (men). The list also has novelty voices such as Bells and Boing; avoid them unless asked. Without a setting, each character gets a different plain voice. |
-| `none` | Free | Silent, with captions. Durations are estimated from word count and mouths are guessed from syllables. Good for checking staging quickly. |
-| `"audio"` on a line | Free | Any recording FFmpeg can read. Use this for another speech tool or a real voice. |
-| `elevenlabs` | Paid | Needs `ELEVENLABS_API_KEY` in the environment and `"voice": { "elevenlabs": "<voice id>" }` in each speaking character's file. |
+Choose the engine with `--voice <engine>` or `"voice"` at the top of the sketch. Set each character's voice in their file, one entry per engine:
 
-ElevenLabs rules:
+```json
+"voice": { "say": "Daniel", "openvoice": "EN-BR", "elevenlabs": "<voice id>", "sarvam": "simran_en_customer" }
+```
+
+### Free
+
+| Engine | Notes |
+| --- | --- |
+| `say` | Mac only, and the default there. Use the exact name `sketch.mjs voices` prints. Plain speaking voices that are usually installed: Samantha, Kathy, Karen and Moira (women), Daniel, Fred, Ralph and Albert (men). The list also has novelty voices such as Bells and Boing; avoid them unless asked. Without a setting, each character gets a different plain voice. |
+| `openvoice` | Runs on this machine once installed. Voices: `EN-US`, `EN-BR`, `EN_INDIA`, `EN-AU`, `EN-Default`. Without a setting, characters take them in that order. It reads plain words only, in English. The first line after a restart takes longer while the model loads. |
+| `none` | Silent, with captions. Durations are estimated from word count and mouths are guessed from syllables. Good for checking staging quickly. |
+| `"audio"` on a line | Any recording FFmpeg can read. Use this for another speech tool or a real voice. |
+
+**Installing openvoice.** It is optional. Only install it when the user asks, and tell them first that it downloads about 2 GB and takes several minutes. It needs [uv](https://docs.astral.sh/uv/).
+
+```sh
+bash SKILL/scripts/install-openvoice.sh
+```
+
+It installs MeloTTS, the speech model OpenVoice V2 is built on, into `~/.2d-character-sketch/openvoice` with its own Python, speaks a test line, and only then marks itself ready. Set `OPENVOICE_HOME` to use another folder. Delete the folder to remove it. `doctor` shows whether it is ready.
+
+### Paid
+
+| Engine | Key name | Voice setting | Notes |
+| --- | --- | --- | --- |
+| `elevenlabs` | `ELEVENLABS_API_KEY` | A voice id from the user's ElevenLabs voice library | The model defaults to `eleven_v4`. Set `"elevenlabsModel"` at the top of the sketch for another. Charged in credits, about one per character of text. |
+| `sarvam` | `SARVAM_API_KEY` | A speaker name from [Sarvam's voice list](https://docs.sarvam.ai/api/api-guides-tutorials/text-to-speech/voices) | The model defaults to `bulbul:v4-flash` and the language to `en-IN`. Set `"sarvamModel"` or `"language"` (for example `"hi-IN"`) at the top of the sketch. Speaker names differ between models. Sarvam's price list on 2026-11-11 was ₹1 per 1,000 characters for `bulbul:v4-flash` and ₹3 for `bulbul:v3`, pay as you go. |
+
+Steps for either one:
 
 1. Use it only when the user asks for it.
-2. Run once without `--credits`. The tool stops and prints how many credits the missing lines need. That number is an estimate of one credit per character of text. Nothing is sent.
-3. Tell the user that number and wait for a yes.
-4. Run again with `--credits <that number or the user's limit>`. The tool sends only lines that have no recording yet, and stops if the provider refuses one. Lines already made are kept and are not charged again.
-5. The model defaults to `eleven_v4`. Set `"elevenlabsModel"` at the top of the sketch to use another.
+2. **The key.** Run `doctor`. If it reports no key, ask the user to add it themselves: one line, `ELEVENLABS_API_KEY=...` or `SARVAM_API_KEY=...`, in a file named `.env.local` in the working folder, or in `~/.2d-character-sketch/keys.env` to cover every project. A key already in the environment also works. Do not ask them to paste the key into the chat, and do not write or print it yourself.
+3. If the working folder is a git repository, `.env.local` must be listed in `.gitignore`. The tool stops and says so if it is not. Adding that line to `.gitignore` is something you can do.
+4. Put a voice in each speaking character's file.
+5. Run once without `--max-chars`. The tool stops and prints how many characters of text the missing lines would send. Nothing is sent.
+6. Tell the user that number, and what it costs if you know their plan, and wait for a yes.
+7. Run again with `--max-chars <that number or the user's limit>`. The tool sends only lines that have no recording yet, and stops if the provider refuses one. Lines already made are kept.
+8. `run.json` records the characters sent, and the credits charged when the provider reports them.
 
-The ElevenLabs path follows the request this tool's source project uses in production, but it had not been run from this tool when the skill was written. Treat the first paid run as a test: one short line first.
+Neither paid engine had been run end to end when this was written. Their refusals (no key, no voice, no cap, an unignored key file) were tested. Treat the first paid run as a test: one short line first, then check the recording.
 
-**Mouth shapes.** With [Rhubarb Lip Sync](https://github.com/DanielSWolf/rhubarb-lip-sync) on the PATH, or its location in the `RHUBARB` environment variable, mouths match the sounds spoken. Without it the tool opens and closes the mouth with the loudness of the recording. That is in time with the voice but less exact, and the render prints a warning saying so.
+**Mouth shapes.** With [Rhubarb Lip Sync](https://github.com/DanielSWolf/rhubarb-lip-sync) on the PATH, or its location in the `RHUBARB` environment variable, mouths match the sounds spoken. Rhubarb is built for English, so for other languages expect approximate shapes. Without it the tool opens and closes the mouth with the loudness of the recording. That is in time with the voice but less exact, and the render prints a warning saying so.
 
 ## What a render leaves
 
@@ -170,6 +197,6 @@ The ElevenLabs path follows the request this tool's source project uses in produ
 | `out/<name>/sketch.mp4` | The video: 1920 × 1080 at 24 frames a second. With `--draft` it is 960 × 540 and everything in this table is under `out/<name>-draft/`. |
 | `out/<name>/contact-sheet.png` | The review picture. Look at it first. |
 | `out/<name>/plan.json` | The frozen frame plan: every shot's frames, camera and acting, and every line's timing and mouth shapes. Read it to find out why something happened when it did. |
-| `out/<name>/run.json` | The receipt: sizes, counts, voice engine, credits spent, warnings. |
+| `out/<name>/run.json` | The receipt: sizes, counts, voice engine, characters sent to a paid voice, warnings. |
 
 The tool checks the finished video's frame count, size and sound against the plan, and fails loudly if they differ.

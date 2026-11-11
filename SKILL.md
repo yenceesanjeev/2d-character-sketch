@@ -71,12 +71,25 @@ A mistake in a file stops the run with a list of every problem and the allowed v
 
 ## Voice
 
-- **Free voice (default on a Mac):** the built-in `say` voices. They sound robotic but cost nothing and are good for timing.
-- **No voice:** `--voice none`, and the default away from a Mac. Lines play silent with captions and guessed mouth movement.
-- **Your own recordings:** put `"audio": "path.wav"` on a line.
-- **ElevenLabs (paid):** only when the user asks for it. It needs `ELEVENLABS_API_KEY` in the environment, a voice id in each speaking character's file, and `--credits <max>`. The tool refuses to send anything until the cap covers the estimate. **Tell the user the estimate and get a yes before passing `--credits`.** Never write the key into a file.
+Use the free default unless the user names another voice. They choose by saying so ("use OpenVoice", "use ElevenLabs", "use Sarvam"), and you pass `--voice <engine>`.
 
-Details are in [references/sketch.md](references/sketch.md#voice).
+| Engine | Cost | When the user asks for it |
+| --- | --- | --- |
+| `say` | Free | The default on a Mac. Robotic, but good for timing. |
+| `openvoice` | Free, local | Optional install of about 2 GB. Ask first, then run `bash SKILL/scripts/install-openvoice.sh`. Five English voices. The default away from a Mac once installed. |
+| `elevenlabs` | Paid | Needs the user's key and a voice id in each speaking character's file. |
+| `sarvam` | Paid | Needs the user's key and a speaker in each speaking character's file. Indian English and ten Indian languages. |
+| `none` | Free | Silent with captions and guessed mouth movement. |
+
+A line can also name the user's own recording with `"audio": "path.wav"`.
+
+Rules for the paid voices:
+
+1. **The user adds the key, not you.** They put one line, `ELEVENLABS_API_KEY=...` or `SARVAM_API_KEY=...`, in `.env.local` in the working folder, or in `~/.2d-character-sketch/keys.env` to cover every project. Never ask for a key in the chat, never type one into a file, and never print one. `doctor` says whether a key was found and where.
+2. **A key file inside a git repository must be ignored by git.** The tool refuses to use it otherwise and says what to add to `.gitignore`.
+3. **Nothing is sent without a cap.** Run without `--max-chars` first. The tool prints how many characters of text it would send and sends nothing. Tell the user that number, wait for a yes, then pass `--max-chars <that number>`.
+
+Details, prices and voice lists are in [references/sketch.md](references/sketch.md#voice).
 
 ## Rules
 
@@ -84,6 +97,7 @@ Details are in [references/sketch.md](references/sketch.md#voice).
 - The sketch file is the source. To change the video, change the file and render again.
 - Keep earlier renders unless the user says to delete them. To keep a version you have shown, save the next one under a new sketch name, for example `tea-v2.json`.
 - Say plainly what is rough: the free voice, mouths that follow loudness, a framing you could not fix.
+- Install nothing, and send nothing to a paid service, unless the user asked for it in this conversation.
 
 ## Limits
 
