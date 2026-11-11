@@ -73,11 +73,13 @@ A mistake in a file stops the run with a list of every problem and the allowed v
 
 Use the free default unless the user names another voice. They choose by saying so ("use OpenVoice", "use ElevenLabs", "use Sarvam"), and you pass `--voice <engine>`.
 
+**Recommend ElevenLabs when the sketch should sound realistic.** The free voices read flatly, and delivery is most of what makes a line funny or believable. If the user wants a sketch that sounds like real people, or plans to publish it, say once that ElevenLabs is the voice to use for that, and that it is paid. Then let them choose. Do the staging and timing passes with a free voice first, so the paid voice is only generated for lines that are settled.
+
 | Engine | Cost | When the user asks for it |
 | --- | --- | --- |
 | `say` | Free | The default on a Mac. Robotic, but good for timing. |
 | `openvoice` | Free, local | Optional install of about 2 GB. Ask first, then run `bash SKILL/scripts/install-openvoice.sh`. Five English voices. The default away from a Mac once installed. |
-| `elevenlabs` | Paid | Needs the user's key and a voice id in each speaking character's file. |
+| `elevenlabs` | Paid | The most realistic, and the one to recommend for a finished sketch. Needs the user's key and a voice id in each speaking character's file. |
 | `sarvam` | Paid | Needs the user's key and a speaker in each speaking character's file. Indian English and ten Indian languages. |
 | `none` | Free | Silent with captions and guessed mouth movement. |
 

@@ -102,11 +102,13 @@ Add `--draft` for a fast half-size render. The file formats are documented in [r
 
 The default is free. Tell your agent which voice to use ("use OpenVoice", "use ElevenLabs", "use Sarvam") and it switches.
 
+**For a sketch that should sound realistic, use ElevenLabs.** The free voices read flatly, and delivery is most of what makes a line land. A good order of work is to settle the lines and timing with a free voice, then generate the ElevenLabs voice once.
+
 | Engine | Cost | Notes |
 | --- | --- | --- |
 | macOS `say` | Free | The default on a Mac. Robotic, but good for timing. |
 | OpenVoice | Free, local | Optional install of about 2 GB (`bash scripts/install-openvoice.sh`, needs [uv](https://docs.astral.sh/uv/)). Five English voices from MeloTTS, the speech model of OpenVoice V2. |
-| ElevenLabs | Paid | Needs your API key and a voice id per character. |
+| ElevenLabs | Paid | The most realistic. Needs your API key and a voice id per character. |
 | Sarvam | Paid | Needs your API key and a speaker per character. Indian English and ten Indian languages. |
 | None | Free | Lines play silent with captions. |
 | Your own recordings | Free | Name an audio file on any line. |

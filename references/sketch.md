@@ -172,8 +172,10 @@ It installs MeloTTS, the speech model OpenVoice V2 is built on, into `~/.2d-char
 
 | Engine | Key name | Voice setting | Notes |
 | --- | --- | --- | --- |
-| `elevenlabs` | `ELEVENLABS_API_KEY` | A voice id from the user's ElevenLabs voice library | The model defaults to `eleven_v4`. Set `"elevenlabsModel"` at the top of the sketch for another. Charged in credits, about one per character of text. |
+| `elevenlabs` | `ELEVENLABS_API_KEY` | A voice id from the user's ElevenLabs voice library | The most realistic voice here, and the one to recommend when a sketch should sound like real people. The model defaults to `eleven_v4`. Set `"elevenlabsModel"` at the top of the sketch for another. Charged in credits, about one per character of text. |
 | `sarvam` | `SARVAM_API_KEY` | A speaker name from [Sarvam's voice list](https://docs.sarvam.ai/api/api-guides-tutorials/text-to-speech/voices) | The model defaults to `bulbul:v4-flash` and the language to `en-IN`. Set `"sarvamModel"` or `"language"` (for example `"hi-IN"`) at the top of the sketch. Speaker names differ between models. Sarvam's price list on 2026-11-11 was ₹1 per 1,000 characters for `bulbul:v4-flash` and ₹3 for `bulbul:v3`, pay as you go. |
+
+A good order of work: settle the lines, staging and timing with a free voice, then generate the paid voice once. Changing a line's words after that pays for that line again.
 
 Steps for either one:
 
