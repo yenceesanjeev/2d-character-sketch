@@ -40,7 +40,9 @@ Render it with `node SKILL/scripts/sketch.mjs render sketches/tea.json --draft`,
 | `shots` | The shots, in order. |
 | `voice` | `say`, `openvoice`, `elevenlabs`, `sarvam` or `none`. The `--voice` option overrides it. |
 | `language` | The language Sarvam speaks, such as `en-IN` or `hi-IN`. Default `en-IN`. Other engines ignore it. |
-| `captions` | `true` always, `false` never, or `"auto"` (the default): only on lines with no recording. |
+| `captions` | `"auto"` (the default): only on lines with no recording. `true` always, `false` never. Or a style, which captions every line: `"bar"`, `"box"`, `"outline"`, `"pop"`. See [Captions](#captions). |
+| `pace` | `quick`, `normal` (the default) or `slow`. The silence after a line and at the end of a shot, wherever the line or shot does not give its own: 0.18 and 0.25 seconds, 0.35 and 0.4, or 0.6 and 0.65. |
+| `tone` | A few words on how it should feel, such as "dry, underplayed". The tool only records it. See [script.md](script.md). |
 
 ### Rooms
 
@@ -73,7 +75,7 @@ Where the furniture is, so you can stand people clear of it or in front of it:
 | `frame` | `wide` (the whole room, head to foot), `group` (fitted across the people in `on`, usually cropping at the knee), `medium` (one person, waist up), `close` (one face). Default `wide`. |
 | `on` | Who the framing is on: an id, or a list for `group`. Default: the shot's first speaker. |
 | `lines` | The lines spoken in this shot, in order. |
-| `hold` | Seconds to stay after the last line. A shot with no lines must have it. |
+| `hold` | Seconds to stay after the last line. Default 0.4, or what `pace` sets. A shot with no lines must have it. |
 | `acting` | Timed acting with no speech. See below. |
 | `zoom` | A slow push in over the shot, as a scale: `1.1` is gentle, `1.25` is strong. |
 | `end` | `"fade"` fades to black at the end of the shot. Use it on the last shot only. |
@@ -90,7 +92,7 @@ Where the furniture is, so you can stand people clear of it or in front of it:
 | `look` | Where the speaker looks instead: an id, `camera`, `down` or `up`. An id or `camera` turns the head. `down` and `up` move the eyes and tip the head a little, which reads only in a `close` or `medium`. |
 | `do` | A small action as the line starts. See the list below. |
 | `reactions` | Other people's faces, changed just after the line starts: `{ "theo": "bored" }`. |
-| `pause` | Seconds of silence after the line. Default 0.35. A longer pause before a punchline helps. |
+| `pause` | Seconds of silence after the line. Default 0.35, or what `pace` sets. A longer pause before a punchline helps. |
 | `audio` | A recording to use for this line in place of generated speech. |
 
 Line ids are made for you: `s02-l01` is shot 2, line 1. The contact sheet and `plan.json` use them.
@@ -138,6 +140,39 @@ ffmpeg -v error -y -ss 4.5 -i out/<name>-draft/sketch.mp4 -frames:v 1 -vf "scale
 ```
 
 Check pauses before punchlines, and that silent shots are long enough to read (about 1.2 seconds) and not longer.
+
+<a id="captions"></a>
+
+## Captions
+
+Captions are drawn over the finished picture, so they stay in place when the camera moves.
+
+| Style | Look | Rows | Speaker's name |
+| --- | --- | --- | --- |
+| `bar` | A dark band the full width of the screen | up to 2 | shown |
+| `box` | A rounded dark box that hugs the words | up to 2 | shown |
+| `outline` | Bold white words with a dark edge | up to 2 | not shown |
+| `pop` | A few big capital words at a time, the word being said in yellow | 1 | not shown |
+
+Write a style name to caption every line, or an object to change more:
+
+```json
+"captions": { "style": "box", "show": "always", "position": "top", "names": false }
+```
+
+| Field | Values |
+| --- | --- |
+| `style` | `bar` (the default), `box`, `outline`, `pop` |
+| `show` | `always`, `never`, or `auto`: only lines with no recording. Default `always` when you name a style. |
+| `position` | `bottom` (the default) or `top` |
+| `names` | `true` or `false`. The default depends on the style. |
+
+`--captions <style>`, `--captions auto` or `--captions off` on `render` and `say` overrides the sketch for one run, so you can try a style without editing the file.
+
+- **A long line is shown in parts.** Each part stays up for a share of the line's time in proportion to its letters. The same estimate picks the yellow word in `pop`. It follows the voice closely on short lines and can drift by a word or two on long ones, so keep lines short when using `pop`.
+- Words in square brackets are not shown.
+- **Check the contact sheet.** In a `close` the chin and collar are near the bottom of the frame, so bottom captions can sit over them. Use `"position": "top"` for a sketch that is mostly close-ups.
+- `outline` and `pop` were checked with librsvg 2.60. If the dark edge covers the letters, your librsvg is too old to draw the edge underneath them (`rsvg-convert --version`); use `bar` or `box`.
 
 <a id="voice"></a>
 

@@ -9,12 +9,14 @@
 //   node sketch.mjs sheet [id ...]                 draw characters/<id>.sheet.png (all characters if none named)
 //   node sketch.mjs say <id> "words" [options]     one character saying one line -> out/say-<id>-<first words>/sketch.mp4
 //   node sketch.mjs render <sketch.json> [options] a whole sketch -> out/<name>/sketch.mp4 and a contact sheet
+//   node sketch.mjs script <sketch.json>           print a sketch as a readable script with its estimated length
 //   node sketch.mjs voices                         list the voices each engine offers
 //   node sketch.mjs export <folder>                copy this skill, complete, to another folder
 //
 // Options: --dir <workspace> (default: current folder)   --draft (half size, faster, written to out/<name>-draft)
 //          --voice say|openvoice|elevenlabs|sarvam|none
 //          --max-chars <n>   the most characters of text a paid voice may be sent in this run
+//          --captions bar|box|outline|pop|auto|off   caption every line in that style (overrides the sketch)
 //          --face <expression> --pose <pose> --frame wide|medium|close --set <room>   (say only)
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -25,9 +27,10 @@ import { basename, delimiter, dirname, join, relative, resolve } from 'node:path
 import { fileURLToPath } from 'node:url';
 import { FPS, W, H, bodies, createCast, createScene, expressions, hairStyles, poseOf, table } from './cutout-draw.mjs';
 import { builtIn } from './cutout-sets.mjs';
+import { CAPTION_STYLES, captionSetting, captionSvg } from './captions.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const VERSION = '0.2.1';
+const VERSION = '0.3.0';
 const sha = (input) => createHash('sha256').update(input).digest('hex');
 const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const onPath = (name) => (process.env.PATH ?? '').split(delimiter).some((dir) => dir && existsSync(join(dir, name)));
@@ -359,6 +362,8 @@ async function speak(workspace, lines, specs, engine, options) {
 const FRAMES = ['wide', 'group', 'medium', 'close'], FIG = 0.75, SEAT_Y = 267;
 const DOES = ['nod', 'shake-head', 'eyeroll', 'lean-in', 'step-forward', 'half-rise', 'sit', 'eyes-closed', 'eyes-open'];
 const LOOKS = ['camera', 'down', 'up'];
+// How fast a sketch moves when a line or shot does not say: [seconds of silence after a line, seconds a shot stays after its last line].
+const PACES = { quick: [0.18, 0.25], normal: [0.35, 0.4], slow: [0.6, 0.65] };
 
 // Check the whole sketch and report every problem at once.
 function check(sketch, specs) {
@@ -370,6 +375,8 @@ function check(sketch, specs) {
   const custom = typeof sketch.set === 'string' && sketch.set.endsWith('.svg');
   if (!custom && !SETS[sketch.set ?? 'plain']) bad(`set "${sketch.set}" must be one of: ${Object.keys(SETS).join(', ')}, or the path of an .svg backdrop`);
   if (!Array.isArray(sketch.shots) || !sketch.shots.length) bad('"shots" must list at least one shot');
+  if (sketch.pace !== undefined && !PACES[sketch.pace]) bad(`pace "${sketch.pace}" must be one of: ${Object.keys(PACES).join(', ')}`);
+  try { captionSetting(sketch.captions); } catch (error) { bad(error.message); }
   const who = (id, where) => { if (!ids.includes(id)) bad(`${where}: "${id}" is not in the cast (${ids.join(', ')})`); };
   const acting = (item, where) => {
     if (item.face && !expressions[item.face]) bad(`${where}: face "${item.face}" is not an expression. Choose from: ${Object.keys(expressions).join(', ')}`);
@@ -426,7 +433,7 @@ function compile(sketch, specs, voiced) {
     const inner = view[2] / 1.14;
     return inner < 800 ? [view[0] + inner * 0.07, view[1] - 32, inner] : view;
   };
-  const cuts = [], lines = [], warnings = [], face = {}, looking = {};
+  const cuts = [], lines = [], warnings = [], face = {}, looking = {}, pace = PACES[sketch.pace ?? 'normal'];
   for (const id of ids) face[id] = specs[id].resting;
   let clock = 0, last = null;
   sketch.shots.forEach((shot, s) => {
@@ -455,11 +462,11 @@ function compile(sketch, specs, voiced) {
       for (const [other, reaction] of Object.entries(line.reactions ?? {})) act({ who: other, face: reaction }, time + 0.3);
       clock = endFrame / FPS;
       if (line.pose) beat(line.who, clock + 0.15, 'pose', 'rest');
-      clock += line.pause ?? 0.35;
+      clock += line.pause ?? pace[0];
       last = line.who; speakers.push(line.who);
     });
     for (const item of shot.acting ?? []) act(item, start + (item.at ?? 0));
-    clock += shot.hold ?? (shot.lines?.length ? 0.4 : 0);
+    clock += shot.hold ?? (shot.lines?.length ? pace[1] : 0);
     const to = Math.round(clock * FPS), kind = shot.frame ?? 'wide';
     const on = [shot.on ?? (kind === 'group' ? [...new Set(speakers)] : speakers[0] ?? shot.acting?.[0]?.who ?? ids[0])].flat();
     if (kind === 'group' && on.length < 2 && ids.length > 1) warnings.push(`${cutId}: a group frame with one person in it is framed like a medium shot. Name two or more in "on".`);
@@ -483,16 +490,6 @@ function spokenFrame(line) {
 const clip = (text, length) => (text.length > length ? text.slice(0, length - 1) + '…' : text);
 
 // ---- Drawing and assembling -----------------------------------------------------------------------------
-function caption(plan, clock, specs) {
-  const line = plan.lines.find((item) => clock >= item.startFrame && clock < item.endFrame + 6);
-  if (!line) return '';
-  const words = `${specs[line.character].name}: ${line.text}`.split(' '), rows = [''];
-  for (const word of words) { if ((rows.at(-1) + ' ' + word).length > 62 && rows.length < 2) rows.push(word); else rows[rows.length - 1] = (rows.at(-1) + ' ' + word).trim(); }
-  const top = H - 28 - rows.length * 28;
-  return `<rect x="0" y="${top}" width="${W}" height="${H - top}" fill="#1d2420" opacity=".62"/>` +
-    rows.map((row, i) => `<text x="${W / 2}" y="${top + 31 + i * 28}" font-family="Helvetica, Arial, sans-serif" font-size="22" fill="#ffffff" text-anchor="middle">${esc(row)}</text>`).join('');
-}
-
 async function build(workspace, sketch, name, options) {
   const specs = await loadCharacters(workspace);
   const { custom } = check(sketch, specs);
@@ -507,9 +504,11 @@ async function build(workspace, sketch, name, options) {
   await mkdir(out, { recursive: true });
   const backdrop = custom ? 'data:image/svg+xml;base64,' + (await readFile(resolve(workspace, sketch.set))).toString('base64') : null;
   const scene = createScene({ timeline: plan, kits: createCast(plan.cutout.cast), asset: () => backdrop });
-  const captions = sketch.captions ?? 'auto', silent = new Set(plan.lines.filter((line) => !line.wav).map((line) => line.id));
-  const shown = captions === true ? plan : captions === false ? { lines: [] } : { lines: plan.lines.filter((line) => silent.has(line.id)) };
-  const inner = (clock) => scene.frame(clock) + caption(shown, clock, specs);
+  // Captions sit on top of the finished picture. "auto" captions only the lines that have no recording.
+  const setting = captionSetting(options.captions ?? sketch.captions), silent = new Set(plan.lines.filter((line) => !line.wav).map((line) => line.id));
+  const captioned = setting.show === 'always' ? plan.lines : setting.show === 'never' ? [] : plan.lines.filter((line) => silent.has(line.id));
+  const names = Object.fromEntries(Object.entries(specs).map(([id, spec]) => [id, spec.name]));
+  const inner = (clock) => scene.frame(clock) + captionSvg({ lines: captioned, clock, names, setting });
   const frame = (clock) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size[0]}" height="${size[1]}" viewBox="0 0 ${W} ${H}">${inner(clock)}</svg>`;
 
   // The contact sheet first: one picture per line (mid-line) and one per silent shot. Look at it before the video.
@@ -567,7 +566,7 @@ async function build(workspace, sketch, name, options) {
   // The saved plan names recordings relative to the workspace, so it can be shared without this machine's folders in it.
   await writeFile(join(out, 'plan.json'), JSON.stringify({ ...plan, lines: plan.lines.map((line) => ({ ...line, wav: line.wav && relative(workspace, line.wav) })) }, null, 2) + '\n');
   await writeFile(join(out, 'run.json'), JSON.stringify({ sketchSha256: sha(JSON.stringify(sketch)), toolSha256: sha(await readFile(fileURLToPath(import.meta.url))),
-    frames: plan.frames, duration, size, cuts: plan.cuts.length, lines: plan.lines.length, voicedLines: spoken.length, voice: receipt, warnings: plan.warnings, streams }, null, 2) + '\n');
+    frames: plan.frames, duration, size, captions: setting, cuts: plan.cuts.length, lines: plan.lines.length, voicedLines: spoken.length, voice: receipt, warnings: plan.warnings, streams }, null, 2) + '\n');
   console.log(`${plan.cuts.length} shot(s), ${plan.lines.length} line(s), ${duration.toFixed(1)} s, voice: ${engine}` +
     (engine === 'none' ? '' : ` (${receipt.generated} new, ${receipt.reused} reused${receipt.characters ? `, ${receipt.characters} characters sent` : ''}${receipt.credits ? `, ${receipt.credits} credits charged` : ''})`));
   for (const warning of plan.warnings) console.log(`warning: ${warning}`);
@@ -606,6 +605,35 @@ function parse(argv) {
   return { flags, rest };
 }
 
+// A sketch as a script a person can read and comment on, with how long it should run. Lengths are
+// estimated from word counts, so the real video differs by a little once the lines are recorded.
+// Characters that have no file yet are allowed here, so a script can be reviewed before anyone is drawn.
+async function readable(workspace, sketch) {
+  const specs = await loadCharacters(workspace);
+  const ids = (sketch.cast ?? []).map((entry) => (typeof entry === 'string' ? entry : entry?.id)), undrawn = ids.filter((id) => id && !specs[id]);
+  for (const id of undrawn) specs[id] = character({ id }, `${id}.json`);
+  const plan = compile(sketch, specs, {}), seconds = (frames) => (frames / FPS).toFixed(1);
+  const words = plan.lines.reduce((sum, line) => sum + line.text.trim().split(/\s+/).length, 0), setting = captionSetting(sketch.captions);
+  const acted = (item) => [item.face, item.pose, item.do, item.look && `looks ${item.look === 'camera' ? 'at camera' : item.look}`].filter(Boolean).join(', ');
+  const out = [sketch.title ?? '(untitled)', [`set: ${sketch.set ?? 'plain'}`, `cast: ${ids.join(', ')}`, sketch.tone && `tone: ${sketch.tone}`, `pace: ${sketch.pace ?? 'normal'}`,
+    `captions: ${setting.show === 'never' ? 'off' : `${setting.style} (${setting.show})`}`].filter(Boolean).join(' · '),
+    `about ${seconds(plan.frames)} s · ${plan.cuts.length} shot(s) · ${plan.lines.length} line(s) · ${words} words`, ''];
+  sketch.shots.forEach((shot, s) => {
+    const cut = plan.cuts[s];
+    out.push(`${s + 1}. ${cut.frame.toUpperCase()}${cut.frame === 'wide' ? '' : ` on ${cut.on.join(' and ')}`}   ${seconds(cut.from)}–${seconds(cut.to)} s${shot.zoom ? '   slow push in' : ''}${shot.end === 'fade' ? '   fade out' : ''}`);
+    for (const line of shot.lines ?? []) {
+      const note = acted({ face: line.face, pose: line.pose, do: line.do }), reactions = Object.entries(line.reactions ?? {}).map(([id, face]) => `${specs[id]?.name ?? id}: ${face}`).join(', ');
+      out.push(`     ${(specs[line.who]?.name ?? line.who).toUpperCase()}${note ? ` (${note})` : ''}: ${line.say}${reactions ? `   [${reactions}]` : ''}`);
+      if (line.pause !== undefined) out.push(`       … pause ${line.pause} s`);
+    }
+    for (const item of shot.acting ?? []) out.push(`     ${specs[item.who]?.name ?? item.who}, silent at ${item.at ?? 0} s: ${acted(item)}`);
+    if (shot.hold) out.push(`       … hold ${shot.hold} s`);
+  });
+  if (undrawn.length) out.push('', `No character file yet for: ${undrawn.join(', ')}. Build them before rendering.`);
+  for (const warning of plan.warnings) out.push(`warning: ${warning}`);
+  return out.join('\n');
+}
+
 // Copy the skill, complete, to another folder. The links to the drawing code become real files, the
 // source project's own full-frame inserts are left out, and version.json says which snapshot this is.
 async function exportSkill(target) {
@@ -619,7 +647,7 @@ async function exportSkill(target) {
   console.log(`Copied version ${VERSION} of the skill to ${to}`);
 }
 
-export { character, check, compile };
+export { character, check, compile, readable };
 
 // Everything below runs only when this file is the program being run, not when a test imports it.
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -634,6 +662,9 @@ try {
     console.log(`openvoice (free, local): ${openvoiceReady() ? OPENVOICE_VOICES.join(', ') : 'not installed. Optional: bash scripts/install-openvoice.sh'}`);
     console.log('elevenlabs (paid): use a voice id from your ElevenLabs voice library.');
     console.log('sarvam (paid): speakers are listed at https://docs.sarvam.ai/api/api-guides-tutorials/text-to-speech/voices');
+    console.log('captions: ' + Object.entries(CAPTION_STYLES).map(([id, style]) => `${id} (${style.note.replace(/\.$/, '')})`).join('; '));
+  } else if (mode === 'script' && args[0]) {
+    console.log(await readable(workspace, JSON.parse(await readFile(resolve(workspace, args[0]), 'utf8'))));
   } else if (mode === 'say' && args.length >= 2) {
     const [id, ...words] = args;
     await build(workspace, { title: `${id} says`, set: flags.set ?? 'plain', cast: [id], captions: 'auto',
@@ -643,7 +674,7 @@ try {
     await build(workspace, JSON.parse(await readFile(file, 'utf8')), basename(file, '.json'), flags);
   } else if (mode === 'export' && args[0]) {
     await exportSkill(args[0]);
-  } else throw new Error('Usage: node sketch.mjs doctor | sheet [id ...] | say <id> "words" | render <sketch.json> | voices | export <folder>   (see the top of this file for options)');
+  } else throw new Error('Usage: node sketch.mjs doctor | sheet [id ...] | say <id> "words" | render <sketch.json> | script <sketch.json> | voices | export <folder>   (see the top of this file for options)');
 } catch (error) {
   console.error(error.message);
   process.exit(1);

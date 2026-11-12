@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createCast, createScene } from './cutout-draw.mjs';
+import { CAPTION_STYLES, captionSetting, captionSvg } from './captions.mjs';
 import { character, check, compile } from './sketch.mjs';
 
 const specs = Object.fromEntries(['ann', 'ben'].map((id) => [id, character({ id }, `${id}.json`)]));
@@ -55,4 +56,34 @@ test('a bad sketch or character is refused with every problem listed', () => {
   assert.throws(() => check({ set: 'moon', cast: ['ann', 'zed'], shots: [{ frame: 'tight', lines: [{ who: 'ann', say: 'hi', face: 'glad' }] }, {}] }, specs),
     (error) => ['zed', 'moon', 'tight', 'glad', 'hold'].every((word) => error.message.includes(word)));
   assert.throws(() => character({ id: 'Bad One', style: 'mohawk', skin: 'red' }, 'bad.json'), /mohawk[\s\S]*|lowercase/);
+});
+
+test('captions show the words being said, in each style, and a bad setting is refused', () => {
+  const lines = [{ character: 'ann', text: 'One two three. Four five six seven eight nine ten eleven twelve.', startFrame: 10, endFrame: 110 }];
+  const names = { ann: 'Ann' }, draw = (value, clock) => captionSvg({ lines, clock, names, setting: captionSetting(value) });
+  for (const style of Object.keys(CAPTION_STYLES)) assert.match(draw(style, 20), /<text/, style);
+  assert.equal(draw('bar', 5), '', 'nothing before the line');
+  assert.equal(draw('bar', 130), '', 'nothing once it has finished');
+  assert.match(draw('bar', 20), /Ann:/);
+  assert.doesNotMatch(draw({ style: 'bar', names: false }, 20), /Ann:/);
+  // Pop shows a few words at a time, never two sentences together, and lights exactly one word.
+  const early = draw('pop', 12), late = draw('pop', 105);
+  assert.match(early, /ONE/); assert.doesNotMatch(early, /FOUR|TWELVE/);
+  assert.match(late, /TWELVE/); assert.doesNotMatch(late, /ONE/);
+  assert.equal(early.match(/#ffd84a/g).length, 1);
+  // Top and bottom land in different halves of the 540-high frame.
+  const y = (svg) => Number(svg.match(/<text x="480" y="([\d.]+)"/)[1]);
+  assert.ok(y(draw({ style: 'box', position: 'top' }, 20)) < 150 && y(draw('box', 20)) > 400);
+  assert.deepEqual([captionSetting(undefined).show, captionSetting(true).show, captionSetting(false).show, captionSetting('pop').show], ['auto', 'always', 'never', 'always']);
+  assert.throws(() => captionSetting('neon'), /bar, box, outline, pop/);
+  assert.throws(() => check({ cast: ['ann'], captions: { style: 'bar', position: 'left' }, pace: 'frantic', shots: [{ lines: [line] }] }, specs),
+    (error) => ['position', 'frantic'].every((word) => error.message.includes(word)));
+});
+
+test('pace sets the gaps a sketch does not spell out', () => {
+  const length = (pace) => compile({ cast: ['ann', 'ben'], pace, shots: [{ lines: [line, { who: 'ben', say: 'No.' }] }] }, specs, {}).frames;
+  assert.ok(length('quick') < length(undefined) && length(undefined) < length('slow'));
+  assert.equal(length('normal'), length(undefined));
+  const fixed = (pace) => compile({ cast: ['ann'], pace, shots: [{ hold: 1, lines: [{ ...line, pause: 0.5 }] }] }, specs, {}).frames;
+  assert.equal(fixed('quick'), fixed('slow'), 'a pause and hold that are written down are kept as written');
 });

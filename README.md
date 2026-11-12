@@ -9,6 +9,9 @@ Ask your coding agent for any of these and it follows the skill:
 - "Build me a character: a tired barista with a green apron." You get a character sheet.
 - "Make her say: we are out of oat milk." You get a short lip-synced clip.
 - "Add a customer and make a four-shot sketch in the park." You get a 1920 × 1080 video.
+- "I have an idea: a barista who refuses to admit the oat milk ran out. Thirty seconds." You get a script to comment on before anything is drawn.
+- "Here is my script. Direct it." Your words are kept, and the set, tone, pace, shots and pauses are filled in.
+- "Put captions on it, the big word-by-word kind." You get the same video with the words on screen.
 
 The preview above was rendered from [examples/sketches/tea.json](examples/sketches/tea.json). It is a silent GIF; the rendered video has speech.
 
@@ -55,6 +58,43 @@ A sketch is one JSON file: a room, a cast, and a list of shots. Each shot has a 
 Every render also writes a contact sheet, one picture per line, which the agent checks before showing you the video.
 
 ![Contact sheet for the example sketch](examples/out/tea/contact-sheet.png)
+
+## Preparing the script
+
+Give the agent an idea and it writes a short script, shows it to you in plain reading form, and asks one pointed question at a time until you are happy. Give it a finished script and it keeps your words and fills in the rest: who stands where, the room, the tone, the pace, the framings and the pauses. The instructions it follows are in [references/script.md](references/script.md).
+
+Any sketch file can be printed as a readable script with its estimated length:
+
+```sh
+node scripts/sketch.mjs script sketches/tea.json --dir examples
+```
+
+```
+Tea
+set: home · cast: mira, theo · pace: normal · captions: bar (auto)
+about 14.8 s · 4 shot(s) · 4 line(s) · 23 words
+
+1. WIDE   0.0–8.0 s
+     MIRA (happy, offer): I made you tea. It took four minutes and all of my patience.
+     THEO (skeptical): This is coffee.
+2. CLOSE on mira   8.0–10.7 s
+     MIRA (smug): It identifies as tea.   [Theo: bored]
+```
+
+## Captions
+
+Four styles are built in. Set `"captions": "pop"` at the top of a sketch, or add `--captions pop` to a render.
+
+| Style | Look |
+| --- | --- |
+| `bar` | A dark band across the screen, with the speaker's name |
+| `box` | A rounded dark box that hugs the words, with the name |
+| `outline` | Bold white words with a dark edge, no background |
+| `pop` | A few big words at a time, the word being said in yellow |
+
+![The four caption styles: bar (bottom and top), box, outline and pop](examples/captions.png)
+
+Captions can sit at the bottom or the top, with or without names. Without a setting, only lines that have no recording are captioned. When captions change word by word, the timing is estimated from the letters in the line, not measured from the sound.
 
 ## Install
 
@@ -133,6 +173,8 @@ You are responsible for the licence terms of whichever voice you use, including 
 - Five rooms are built in: `plain`, `home`, `park`, `office` and `table`. Any other place needs an SVG backdrop that you supply.
 - Three props can be held: phone, mug and pen.
 - One camera angle. Framings crop and zoom the same flat drawing.
+- Captions come in four styles and one position per sketch. The tool does not caption a video it did not make.
+- The script instructions are guidance for the agent. Their word budgets and pause lengths have not been tested on many sketches.
 - Up to three characters frame cleanly.
 - The ElevenLabs and Sarvam paths have not been run end to end; only their safety checks were tested. Treat your first paid run as a test and start with one short line.
 - Tested on macOS only so far.
@@ -141,10 +183,11 @@ You are responsible for the licence terms of whichever voice you use, including 
 
 | Path | What it is |
 | --- | --- |
-| `SKILL.md` | What the agent reads first: the three workflows and the rules |
-| `references/` | The character fields and the sketch file format |
+| `SKILL.md` | What the agent reads first: the workflows and the rules |
+| `references/` | The character fields, the sketch file format, and how to prepare a script |
 | `scripts/sketch.mjs` | The command-line tool |
 | `scripts/cutout-draw.mjs`, `scripts/cutout-sets.mjs` | The drawing code: characters, expressions, poses and rooms |
+| `scripts/captions.mjs` | The caption styles |
 | `scripts/install-openvoice.sh`, `scripts/openvoice_tts.py` | The optional free local voice: its installer and the script that speaks |
 | `scripts/sketch.test.mjs` | Tests. Run them with `node --test scripts/sketch.test.mjs` |
 | `version.json` | Which snapshot this is |
