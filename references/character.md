@@ -34,11 +34,16 @@ Colours are six-digit hex, like `#7d8449`. Each fill has an edge colour named `<
 | `description` | One line on the sheet, for people | any text |
 | `skin` | Skin colour | hex (`#d0976a`) |
 | `hair` | Hair and eyebrow colour | hex (`#2b2024`) |
-| `style` | Hair shape | `swept`, `part`, `unkempt`, `short`, `fluffy`, `long`, `bun`, `bald` (`short`) |
+| `style` | Hair shape. Run `sketch.mjs options hair <id>` to see every one on a character from three angles. | `swept`, `part`, `unkempt`, `short`, `fluffy`, `long`, `bun`, `bald`, and a first batch added 2026-11-12 that the user has not yet reviewed: `afro`, `receding`, `bangs`, `bob`, `lob`, `ponytail`, `spiky`, `pigtails`, `buns`, `flattop`, `mohawk`, `stubble` (a recently shaved head: close dots of new hair), `balding` (a bare crown with hair round the sides), `curtains` (`short`) |
 | `strand` | Thin highlight lines in the hair. Only `swept`, `part` and `unkempt` draw them. | hex (a lighter tone of `hair`) |
 | `temple` | A few grey streaks at the sideburn | hex (none) |
 | `head` | Head half-width and half-height | two numbers from 40 to 70 (`[49, 60]`) |
 | `glasses` | Glasses | `rimless`, `thick`, `steel` (none) |
+| `beard` | Facial hair, in the hair colour. `full` covers the lower face and leaves a patch of skin round the mouth so the mouth still reads. `stubble` is the same area in close dots. `goatee` is the chin only. | `full`, `goatee`, `stubble` (none) |
+| `moustache` | A moustache, with or without a beard | `true` (off) |
+| `hat` | Headwear over the hair. A `cap` has its peak on the side they face. | `beanie`, `cap` (none) |
+| `hatColour` | The hat's colour | hex (`#4a5a6a`) |
+| `height` | How tall they are. The whole figure is drawn larger or smaller with its feet on the same floor. People sitting at the `table` are all drawn the same size. | 0.8 (short) to 1.2 (tall) (`1`) |
 | `tiredEyes` | A small line under each eye | `true` (off) |
 | `top` | Main clothing colour | hex (`#6d7c8b`) |
 | `front` | What the top is | `tee`, `shirt`, `open`, `hoodie` (`tee`) |
@@ -53,12 +58,16 @@ Colours are six-digit hex, like `#7d8449`. Each fill has an edge colour named `<
 | `legs` | Trouser colour | hex (`#4a4f5c`) |
 | `shoe` | Shoe colour | hex (`#3a332f`) |
 | `resting` | The face they wear when nothing else is directed | any expression (`neutral`) |
-| `holds` | Something always in their hand, set separately for standing and seated | `{ "standing": "mug" }`, `{ "seated": "pen" }` or both keys. Props: `phone`, `mug`, `pen` |
+| `holds` | Something always in their hand, set separately for standing and seated. For something held in one scene only, use `holding` in the sketch instead. | `{ "standing": "mug" }`, `{ "seated": "pen" }` or both keys. Things: `phone`, `mug`, `pen`, `book`, `clipboard`, `mic`, `cup`, `glass`, `bottle`, `tablet`, `folder`, `sandwich`, `apple`, `pizza`, `gift`, `flowers`, `remote`, `keys`, `card`, `trophy`, `sign` |
 | `voice` | Their voice, one entry per engine you use. The `say` name must match a name from `sketch.mjs voices` exactly. | `{ "say": "Daniel", "openvoice": "EN-BR", "elevenlabs": "<voice id>", "sarvam": "<speaker>" }` |
 
 `front` in practice: `tee` is a plain top. `shirt` adds a button line. `open` is a jacket, cardigan or overshirt over an inner tee. `hoodie` adds a hood, pocket and drawstrings. Every top ends at the hip, so a long coat comes out as a jacket.
 
 A character who `holds` something keeps it in the gesturing hand in every pose. So `offer` holds the phone up, which reads well, and the `phone` and `sip` poses are for characters who do not already hold that prop.
+
+## The starters
+
+`starter-cast.json` in the skill folder holds twelve characters: Zoe (afro), Mei (bob, glasses), Lena (long with a fringe), Nora (shoulder length), Tess (ponytail), Kofi (flat top), Raj (stubble), Walt (balding, grey, glasses), Theo (centre part), Kai (spiky, headphones), Pippa (pigtails) and Omar (receding, greying). `sketch.mjs starters` draws them in a row as `characters/starters.png`; `starters <id>` or `starters all` copies them in and never overwrites a file that is already there. They are examples of telling people apart by outline first: different hair shape, then height and build, then facial hair, then top colour. Their heights run from 0.88 to 1.12. `options face <id>` draws every beard, moustache and hat on a character, the way `options hair <id>` does for hair.
 
 ## The look, and why
 
@@ -88,12 +97,13 @@ Only a few things vary, so choose them on purpose:
 
 Open `characters/<id>.sheet.png` and check each of these. They all caught real faults.
 
-- **Top silhouette.** Does the hair read as hair in all four turns? Lumps on top can read as a crown.
+- **Top silhouette.** Does the hair read as hair in all four turns? Lumps on top can read as a crown, and a bun has been read as a turban. Shrink the sheet to the size of a face in a wide shot and name what you see; if it is not plainly hair, pick another style.
 - **Hair covers the head's edge.** No skin-coloured sliver between hair and background.
 - **Nothing dark under the chin.** Hair, a hood or a dark inner top directly below the jaw can read as a beard. The neck should show.
 - **Side view.** The far ear should be hidden, and glasses should still sit on the nose.
 - **Resting face.** The turnaround, the large head and the cast picture all wear it. Does it match the personality you were asked for?
 - **Colour.** Can you tell the top from the skin and the hair at thumbnail size? Is the inner tee visible on an `open` top?
+- **Resting face.** `happy` draws the eyes as closed arcs and `smug`, `bored` and `tired` half close them. As a resting face these made a character look asleep when speaking to the camera. Prefer `neutral` or `serene` at rest unless the half-closed look is the character.
 - **Expressions.** Scan the grid. Brows are drawn in the hair colour, so very pale hair on pale skin loses them.
 - **Weight.** If the figure looks heavier than intended, lower `waist` or `paunch` by a little.
 - **Cast.** In `characters/cast.png`, cover the faces. Can you still tell who is who?

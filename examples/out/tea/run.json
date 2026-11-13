@@ -1,6 +1,6 @@
 {
   "sketchSha256": "95832026deb1272bbc5cfe898371f6f8cc7ba32cbc1e56b071cbe52eb3789e47",
-  "toolSha256": "82fe155ef91fb9ee624144d2db1cbab45e56144a5bb2bb127b9ec643c45c041c",
+  "toolSha256": "9a8fd8bee5347bfb51acf5df611c1fb855c369f68a609f18b853953f3c0bc9ca",
   "frames": 299,
   "duration": 12.458333333333334,
   "size": [
@@ -11,24 +11,35 @@
     "style": "bar",
     "show": "auto",
     "position": "bottom",
-    "names": true
+    "names": true,
+    "length": "full"
   },
+  "scenes": 1,
   "cuts": 4,
   "lines": 4,
   "voicedLines": 4,
+  "sounds": 0,
   "voice": {
     "engine": "say",
     "generated": 0,
     "reused": 4,
+    "recovered": 0,
     "characters": 0,
     "credits": 0,
+    "rejected": [],
+    "remeasured": 4,
     "mouths": [
-      "loudness"
+      "rhubarb"
     ]
   },
-  "warnings": [
-    "Mouth shapes follow loudness only. Install Rhubarb Lip Sync (or set RHUBARB to its path) for shapes that match the sounds."
-  ],
+  "listen": [],
+  "lipSync": {
+    "rhubarb": 4,
+    "loudness": 0,
+    "guessed": 0,
+    "flagged": []
+  },
+  "warnings": [],
   "streams": [
     {
       "codec_type": "video",

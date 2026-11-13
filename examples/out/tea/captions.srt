@@ -1,0 +1,16 @@
+1
+00:00:00,500 --> 00:00:04,083
+Mira: I made you tea. It took four
+minutes and all of my patience.
+
+2
+00:00:04,167 --> 00:00:05,375
+Theo: This is coffee.
+
+3
+00:00:06,125 --> 00:00:07,792
+Mira: It identifies as tea.
+
+4
+00:00:10,208 --> 00:00:11,958
+Theo: Fine. Good tea.

@@ -22,7 +22,7 @@ export const CAPTION_POSITIONS = ['bottom', 'top'];
 
 // Turn whatever a sketch or scene saved into one full setting, or say what is wrong with it.
 // true / "always" -> always, in the bar style; false / "off" -> never; "auto" -> only lines with no
-// recording; a style name -> always, in that style; or an object { style, show, names, position }.
+// recording; a style name -> always, in that style; or an object { style, show, names, position, length }.
 export function captionSetting(value, fallbackShow = 'auto') {
   const styles = Object.keys(CAPTION_STYLES);
   let given = value;
@@ -38,6 +38,9 @@ export function captionSetting(value, fallbackShow = 'auto') {
   if (!CAPTION_POSITIONS.includes(setting.position)) throw new Error(`captions: position "${setting.position}" must be one of: ${CAPTION_POSITIONS.join(', ')}`);
   if (given.names !== undefined && typeof given.names !== 'boolean') throw new Error('captions: names must be true or false');
   setting.names = given.names ?? CAPTION_STYLES[setting.style].names;
+  // "short" shows one row of a few words at a time, so a long line is easy to follow along.
+  if (given.length !== undefined && !['full', 'short'].includes(given.length)) throw new Error('captions: length must be "full" or "short"');
+  setting.length = given.length ?? 'full';
   return setting;
 }
 
@@ -84,7 +87,8 @@ export function captionSvg({ lines, clock, names = {}, setting, width = 960, hei
   const name = (setting?.names ?? style.names) ? (names[line.character] ?? line.character) : null;
   // The name leads the first screen and counts toward its width, but takes no speaking time.
   const words = name ? [`${name}:`, ...said] : said, lead = name ? 1 : 0;
-  const all = screens(words, style.across, style.rows);
+  const short = setting?.length === 'short';
+  const all = screens(words, short ? Math.min(style.across, 30) : style.across, short ? 1 : style.rows);
   const total = said.reduce((sum, word) => sum + weight(word), 0);
   const progress = Math.min(0.9999, Math.max(0, (clock - line.startFrame) / Math.max(1, line.endFrame - line.startFrame)));
   let passed = 0, current = words.length - 1;
@@ -118,3 +122,39 @@ export function captionSvg({ lines, clock, names = {}, setting, width = 960, hei
   const [y, tall] = position === 'top' ? [0, top + band] : [top, height - top];
   return `<rect x="0" y="${y}" width="${width}" height="${tall}" fill="#1d2420" opacity=".62"/>` + screen.map((row, i) => text(row, i, 'fill="#ffffff"', plain(row))).join('');
 }
+
+// The same captions as a subtitle file, for a player or a site that shows its own (YouTube, Vimeo, a phone).
+// Each entry is one screen of what captionSvg draws: split the same way, and shown from the moment its
+// first word is estimated to start until the next screen, or a quarter of a second after the line, or the
+// next line, whichever comes first. The timing is the same letter-count estimate the drawn captions use.
+//   lines   [{ character, text, startFrame, endFrame }]   every spoken line, in frames
+//   setting what captionSetting() returned; its style, length and names choose how lines are split
+//   fps     frames a second
+export function captionCues({ lines, names = {}, setting, fps = 24 }) {
+  const style = CAPTION_STYLES[setting?.style ?? 'bar'], short = setting?.length === 'short';
+  const spoken = lines.filter((line) => line.text).sort((a, b) => a.startFrame - b.startFrame), cues = [];
+  spoken.forEach((line, n) => {
+    const said = String(line.text).replace(/\[[^\]]*\]/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (!said.length) return;
+    const name = (setting?.names ?? style.names) ? (names[line.character] ?? line.character) : null;
+    const words = name ? [`${name}:`, ...said] : said, lead = name ? 1 : 0;
+    const all = screens(words, short ? Math.min(style.across, 30) : style.across, short ? 1 : style.rows);
+    const total = said.reduce((sum, word) => sum + weight(word), 0), span = Math.max(1, line.endFrame - line.startFrame);
+    // Where each word starts, as a share of the line: the weight of the words before it.
+    const starts = [];
+    words.reduce((before, word, i) => { starts[i] = before / total; return i < lead ? before : before + weight(word); }, 0);
+    const begins = (screen) => line.startFrame + starts[screen.flat().find((i) => i >= lead) ?? lead] * span;
+    const last = Math.min(line.endFrame + 6, spoken[n + 1]?.startFrame ?? Infinity);
+    all.forEach((screen, s) => {
+      const from = s === 0 ? line.startFrame : begins(screen), to = s + 1 < all.length ? begins(all[s + 1]) : last;
+      if (to > from) cues.push({ start: from / fps, end: to / fps, text: screen.map((row) => row.map((i) => words[i]).join(' ')).join('\n') });
+    });
+  });
+  return cues;
+}
+const stamp = (seconds) => {
+  const ms = Math.round(seconds * 1000), pad = (value, size = 2) => String(value).padStart(size, '0');
+  return `${pad(Math.floor(ms / 3600000))}:${pad(Math.floor(ms / 60000) % 60)}:${pad(Math.floor(ms / 1000) % 60)},${pad(ms % 1000, 3)}`;
+};
+// SubRip (.srt): numbered entries, "hh:mm:ss,mmm --> hh:mm:ss,mmm", the words, a blank line.
+export const srt = (cues) => cues.map((cue, i) => `${i + 1}\n${stamp(cue.start)} --> ${stamp(cue.end)}\n${cue.text}\n`).join('\n');

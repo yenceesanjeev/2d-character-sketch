@@ -8,6 +8,7 @@ Either way the user approves a script they can read, never JSON. Show it in this
 Tea
 set: home · cast: mira, theo · tone: dry, underplayed · pace: normal · captions: bar (auto)
 about 14.8 s · 4 shot(s) · 4 line(s) · 23 words
+a paid voice would be sent 124 characters: about 124 ElevenLabs credits ($0.02 at the Starter plan's rate)
 
 1. WIDE   0.0–8.0 s
      MIRA (happy, offer): I made you tea. It took four minutes and all of my patience.
@@ -42,7 +43,8 @@ about 14.8 s · 4 shot(s) · 4 line(s) · 23 words
 - Two people is easiest: one drives, one reacts. The reactor's silences carry as much as the lines.
 - Lines of 15 words or fewer. Say them aloud in your head; cut any word that can go.
 - Put the word that matters last in its line: "This is coffee", not "Coffee is what this is".
-- The characters cannot walk, touch or pick things up (see Limits in `SKILL.md`). Write jokes that live in words, faces and three props: phone, mug, pen.
+- A list is funnier as three items that get shorter each time. This was used in the sitcom script and has not been reviewed by a viewer.
+- The characters can walk in and out, gesture, hold any of twenty-one things and share a handshake or a high five, but they cannot pick things up, sit down mid-scene or touch otherwise (see Limits in `SKILL.md`). Write jokes that live in words, faces and those moves.
 
 ### Word budget
 
@@ -54,22 +56,25 @@ Speech runs at about two and a half words a second, and a sketch needs silence t
 | 30 s | 50 to 60 | 5 to 8 | 6 to 10 |
 | 60 s | 110 to 125 | 9 to 14 | 12 to 20 |
 
-Over about a minute has not been tested with this tool. Say so if asked for more.
+The longest sketch rendered so far is 104 seconds, about 280 words in five scenes. Past that is untested. Say so if asked for more.
 
 ## From a script
 
-The words are the user's. **Do not rewrite them.** If a line is too long for one shot or cannot be staged, say which and suggest a change, but keep their version until they agree.
+The words are the user's. **Do not rewrite them.** When they say "you pick" about the cast or anything else, pick, say what you picked in your first message, and carry on; do not wait. Fix spelling, because a speech engine reads a typo aloud exactly as written ("Aright", "beleive"), and say which words you fixed. Split a long speech into separate lines at its sentence breaks. Keep a written pause such as a leading "..." in the text and also give the line before it a `pause`, since voices differ in how much silence they add for it. If a line is too long for one shot or cannot be staged, say which and suggest a change, but keep their version until they agree.
 
 Fill in everything else, and say what you chose:
 
 | You fill in | How to choose |
 | --- | --- |
-| `cast` | One character per speaker, left to right in the order they first speak. List the ones that still need building. |
-| `set` | The room the script names, or the nearest built-in one. `plain` when place does not matter. Anything else needs a backdrop you draw. |
+| `cast` | One character per speaker, left to right in the order they first speak in the whole script, and on the same sides in every scene. List the ones that still need building. |
+| `set` | The room the script names, or the nearest built-in one. `plain` when place does not matter. Anything else needs a backdrop you draw. A script that moves between places becomes `scenes`, one per place, in the same file. |
+| Sounds | Every sound the script names (a laugh track, typing, a door) becomes a `sound` on that line or shot. Say where each file will come from before building. See Sound in [sketch.md](sketch.md#sound). |
+| Delivery cues | Only for ElevenLabs: one short bracketed cue at the start of each line, from the line's face and the tone. Add them before quoting the cost, since they count as characters. **A cue describes how the line sounds, never what the picture does:** `[rushed, defensive]` or `[too eager to sound convincing]`, not `[not looking up]`. The one line a paid voice spoke twice carried a picture direction in its cue. That link is a guess from one line, but picture directions belong in `face`, `look` and `pose` anyway. |
 | `tone` | A few words in the user's terms: "dry, underplayed", "warm", "frantic". The tool only records it. You use it to choose everything below. |
 | `pace` | `quick`, `normal` or `slow`. Sets the silence after each line and at the end of each shot where you write none. |
 | Shots | Start `wide`. Cut closer when something changes. See "Directing well" in [sketch.md](sketch.md). |
-| `face`, `pose`, `do` | One per line, from the vocabulary in [sketch.md](sketch.md). A stage direction in the script ("sighs", "to herself") becomes the nearest face, pose or look. |
+| `face`, `pose`, `do` | One per line, from the vocabulary in [sketch.md](sketch.md). A stage direction in the script ("sighs", "to herself") becomes the nearest face, pose or look. Choose the smaller face when two would fit: "pauses, looks up" is `skeptical` with `look: up`, not `surprised`. |
+| A direction the tool cannot do | "Camera slides over", "walks in", "hands her the phone". Tell the user before building what they get instead: a hard cut, a slow push in, a held prop. |
 | `pause` | Write one only where the default is wrong. See below. |
 | Silent shots | Add a `close` on the listener after the punchline, `hold` about 1.2. |
 | `captions` | Leave on `auto` unless the user asked for captions. For a clip meant for a phone feed, suggest `pop`. |
@@ -103,7 +108,10 @@ A pause is where the laugh goes. If the script reads flat, add silence before ad
 
 Watch for these and fix them in the sketch file:
 
-- **Longer than asked.** Recorded speech is usually a little longer than the estimate. Cut a line; do not speed everything up.
+- **Longer than asked.** The estimate is rough either way: the Mac voice has come in 13% under it, the `openvoice` voice 8% over (129 estimated, 140 rendered, at speed 1, on 2026-11-13), and a paid voice runs longer than the free one: one two-minute sketch grew by 14 seconds when it moved from the Mac voice to ElevenLabs. Cut a line; do not speed everything up. A small `"openvoiceSpeed"` such as 1.1 is fine when the user asks for slightly faster speech.
+- **"The pacing seems slow."** Use the cheap levers first: `"pace": "quick"` and shorter `hold` on silent shots, keeping the pauses that set up a laugh. If it is still slow, the words are too many. Show the user the proposed cuts as a before and after table and wait for a yes, since the words are theirs. One promo went from 123 to 93 seconds this way, about 233 words to 190.
+- **A long speech to camera.** A talking head past about twenty seconds was the first thing cut in the sitcom pilot (28 seconds to 19, at the user's request). Shorten it, or break it with a cut to someone listening.
 - **A line holds one framing for more than about five seconds.** Split the line across two shots, or cut it.
 - **The punchline is said in a `wide`.** Move it to a `close` or `medium`.
-- **Two reactions in a row.** Keep the better one.
+- **Two reactions in a row.** Keep the better one, unless the user's script asks for both; then give each its own shot and keep each short.
+- **A face that looks startled or cute on an ordinary line.** Wide eyes and winks are the first thing a viewer objects to. Replace with a calm face and let the line do the work, or with a stock reaction (`small-surprise`, `one-wink`) that plays once and ends.

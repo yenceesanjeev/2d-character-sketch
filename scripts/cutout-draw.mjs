@@ -57,6 +57,7 @@ export const expressions = {
   bored:    { mouth:'A', lid:.5, ...both(0, 0, 0) },
   tired:    { mouth:'A', lid:.4, ...both(0, -3, 1) },
   worried:  { mouth:'A', big:1.06, ...both(4, -5, 1) },
+  curious:  { mouth:'X', big:1.08, ...both(7, -1, 5) },   // a mild surprise: brows up, eyes a touch bigger, mouth closed
   sheepish: { mouth:'W', gaze:[-4, 2], ...both(4, -5, 1) },
   sad:      { mouth:'N', lid:.22, gaze:[0, 3], ...both(3, -8, 0) },
   pained:   { mouth:'B', eyes:'squeeze', ...both(-2, 6, 0) },
@@ -78,6 +79,25 @@ export const hairStyles = {
   long:   { rx:6, ry:47, long:true, fringe:'M-56 -72C-60 -152 60 -152 56 -76C52 -90 42 -100 28 -101C6 -102 -22 -98 -40 -86Q-50 -80 -56 -72Z', strands:'' },
   bun:    { rx:3, ry:44, bun:true, fringe:'M-56 -76C-60 -148 60 -148 56 -76C50 -94 40 -101 28 -101H-28C-40 -101 -50 -94 -56 -76Z', strands:'' },
   bald:   { rx:0, ry:0, bald:true, fringe:'', strands:'' },
+  // Added 2026-11-12 as a first batch to choose from. `fall` is how far down the side locks hang (22 is the
+  // `long` length, 2 is the chin). `tail` is a ponytail behind the head, seen only as the head turns. `pig` is a
+  // pair of pigtails that go round with the head. `block` is a squared top. `crest` is a ridge on a shaved head.
+  afro:   { rx:17, ry:66, fringe:'M-58 -66C-62 -152 62 -152 58 -66C50 -92 36 -103 0 -104C-36 -103 -50 -92 -58 -66Z', strands:'' },
+  receding:{ rx:2, ry:43, fringe:'M-56 -74C-60 -148 60 -148 56 -74C54 -94 46 -108 30 -113C20 -108 8 -104 0 -104C-8 -104 -20 -108 -30 -113C-46 -108 -54 -94 -56 -74Z', strands:'' },
+  bangs:  { rx:6, ry:47, long:true, fringe:'M-57 -66C-61 -152 61 -152 57 -66L54 -85Q0 -93 -54 -85Z', strands:'' },
+  bob:    { rx:8, ry:48, fall:-2, fringe:'M-57 -66C-61 -152 61 -152 57 -66L54 -85Q0 -93 -54 -85Z', strands:'' },
+  lob:    { rx:7, ry:48, fall:8, fringe:'M-56 -72C-60 -152 60 -152 56 -76C52 -90 42 -100 28 -101C6 -102 -22 -98 -40 -86Q-50 -80 -56 -72Z', strands:'' },
+  ponytail:{ rx:3, ry:44, tail:{ out:26, y:24, rx:13, ry:30 }, fringe:'M-56 -76C-60 -148 60 -148 56 -76C50 -94 40 -101 28 -101H-28C-40 -101 -50 -94 -56 -76Z', strands:'' },
+  spiky:  { rx:3, ry:44, fringe:'M-56 -76C-60 -148 60 -148 56 -76C50 -94 40 -101 28 -101H-28C-40 -101 -50 -94 -56 -76Z', strands:'', lift:[[-30, -58, 7, 13, -8], [-15, -65, 7, 16, 8], [1, -68, 7, 18, 16], [17, -66, 7, 16, 24], [31, -59, 7, 13, 34]] },
+  pigtails:{ rx:3, ry:44, pig:{ y:26, rx:12, ry:23 }, fringe:'M-57 -66C-61 -152 61 -152 57 -66L54 -85Q0 -93 -54 -85Z', strands:'' },
+  buns:   { rx:3, ry:44, fringe:'M-56 -76C-60 -148 60 -148 56 -76C50 -94 40 -101 28 -101H-28C-40 -101 -50 -94 -56 -76Z', strands:'', lift:[[-35, -57, 12, 12, 0], [35, -57, 12, 12, 0]] },
+  flattop:{ rx:2, ry:44, fringe:'M-56 -76C-60 -148 60 -148 56 -76C50 -94 40 -101 28 -101H-28C-40 -101 -50 -94 -56 -76Z', strands:'', block:{ w:44, top:30 } },
+  mohawk: { rx:0, ry:0, crest:true, fringe:'', strands:'' },
+  // A recently shaved head: close dots of new hair over the scalp, with no volume.
+  stubble:{ rx:0, ry:0, dots:true, fringe:'M-56 -76C-60 -148 60 -148 56 -76C50 -94 40 -101 28 -101H-28C-40 -101 -50 -94 -56 -76Z', strands:'' },
+  // A bare crown with hair left round the sides and back.
+  balding:{ rx:8, ry:30, band:true, fringe:'', strands:'' },
+  curtains:{ rx:5, ry:46, fringe:'M-56 -70C-60 -150 60 -150 56 -70C52 -90 30 -102 2 -112C-30 -102 -52 -90 -56 -70Z', strands:'M0 -112V-126' },
 };
 
 // A body pose is where the near elbow and wrist go, and which hand drawing ends the arm.
@@ -98,11 +118,61 @@ export const bodies = {
   hang: { elbow:[-58, 74], wrist:[-52, 126], hand:'loose', far:{ elbow:[58, 74], wrist:[52, 126], hand:'loose' } },   // standing, arms at his sides
   pockets:{ elbow:[-62, 80], wrist:[-42, 120], hand:'loose', far:{ elbow:[62, 80], wrist:[42, 120], hand:'loose' } },
   cross:{ elbow:[-64, 88], wrist:[16, 74], hand:'loose', far:{ elbow:[64, 88], wrist:[-16, 80], hand:'loose' } },
+  // Added 2026-11-12 for gestures made while talking. `front` draws the near arm over the head, for a hand at the face.
+  count1:{ elbow:[-86, 72], wrist:[-80, 4], hand:'one' },       // counting on fingers, hand up beside the head
+  count2:{ elbow:[-86, 72], wrist:[-80, 4], hand:'two' },
+  count3:{ elbow:[-86, 72], wrist:[-80, 4], hand:'three' },
+  quotes:{ elbow:[-84, 62], wrist:[-76, -12], hand:'two', far:{ elbow:[84, 62], wrist:[76, -12], hand:'two' } },      // air quotes, fingers up
+  quotes2:{ elbow:[-84, 64], wrist:[-76, -6], hand:'quote', far:{ elbow:[84, 64], wrist:[76, -6], hand:'quote' } },   // air quotes, fingers bent
+  thumb:{ elbow:[-84, 84], wrist:[-76, 34], hand:'thumb' },     // thumbs up
+  stop: { elbow:[-70, 74], wrist:[-58, 12], hand:'open' },      // palm out in front: hold on
+  handsup:{ elbow:[-92, 54], wrist:[-100, -18], hand:'open', far:{ elbow:[92, 54], wrist:[100, -18], hand:'open' } },   // both hands up
+  hello:{ elbow:[-92, 50], wrist:[-112, -26], hand:'open' },    // a raised wave
+  hello2:{ elbow:[-92, 50], wrist:[-94, -32], hand:'open' },
+  idea: { elbow:[-82, 58], wrist:[-76, -22], hand:'one' },      // one finger up: here is a thought
+  pump: { elbow:[-86, 74], wrist:[-78, 6], hand:'fist' },       // a raised fist
+  pump2:{ elbow:[-84, 82], wrist:[-74, 26], hand:'fist' },
+  hips: { elbow:[-88, 84], wrist:[-54, 112], hand:'loose', far:{ elbow:[88, 84], wrist:[54, 112], hand:'loose' } },    // hands on hips
+  scratch:{ elbow:[-88, 34], wrist:[-52, -104], hand:'loose', tilt:4 },   // scratching the back of the head
+  clap: { elbow:[-68, 86], wrist:[-9, 52], hand:'open', far:{ elbow:[68, 86], wrist:[9, 52], hand:'open' } },
+  clap2:{ elbow:[-74, 86], wrist:[-30, 54], hand:'open', far:{ elbow:[74, 86], wrist:[30, 54], hand:'open' } },
+  beg:  { elbow:[-62, 86], wrist:[-7, 36], hand:'open', far:{ elbow:[62, 86], wrist:[7, 36], hand:'open' } },          // hands pressed together: please
+  shh:  { elbow:[-62, 74], wrist:[-5, -6], hand:'one', front:true },      // a finger to the lips
+  facepalm:{ elbow:[-66, 66], wrist:[-8, -34], hand:'open', front:true, tilt:5 },   // a hand over the face
+  chinrub:{ elbow:[-60, 90], wrist:[-12, 14], hand:'loose', front:true },  // hand on the chin, in front
+  carry:{ elbow:[-80, 98], wrist:[-94, 46], hand:'loose' },     // holding something up at chest height
+  micup:{ elbow:[-70, 92], wrist:[-36, 44], hand:'loose' },   // a microphone held up under the chin, clear of the mouth
+  show: { elbow:[-88, 66], wrist:[-100, 10], hand:'loose' },    // holding something out to be seen
+  // Reaching toward another person, for moments two people share. Each comes twice: with the near arm (N) and
+  // with the far arm (F), because which arm is on the partner's side depends on where they stand and how they are flipped.
+  fiveN:{ elbow:[-84, 50], wrist:[-112, -28], hand:'open', far:{ elbow:[58, 74], wrist:[52, 126], hand:'loose' } },   fiveF:{ elbow:[-58, 74], wrist:[-52, 126], hand:'loose', far:{ elbow:[84, 50], wrist:[112, -28], hand:'open' } },
+  shakeN:{ elbow:[-80, 80], wrist:[-116, 62], hand:'loose', far:{ elbow:[58, 74], wrist:[52, 126], hand:'loose' } },  shakeF:{ elbow:[-58, 74], wrist:[-52, 126], hand:'loose', far:{ elbow:[80, 80], wrist:[116, 62], hand:'loose' } },
+  bumpN:{ elbow:[-80, 66], wrist:[-116, 40], hand:'fist', far:{ elbow:[58, 74], wrist:[52, 126], hand:'loose' } },    bumpF:{ elbow:[-58, 74], wrist:[-52, 126], hand:'loose', far:{ elbow:[80, 66], wrist:[116, 40], hand:'fist' } },
+  giveN:{ elbow:[-80, 72], wrist:[-114, 48], hand:'open', far:{ elbow:[58, 74], wrist:[52, 126], hand:'loose' } },    giveF:{ elbow:[-58, 74], wrist:[-52, 126], hand:'loose', far:{ elbow:[80, 72], wrist:[114, 48], hand:'open' } },
 };
-const props = {
+export const props = {
   phone:`<rect x="-7" y="-31" width="14" height="25" rx="3" fill="#2f3238"/><rect x="-5" y="-28" width="10" height="17" rx="1.5" fill="#a9d6cf"/>`,
   mug:`<path fill="none" stroke="#b9b2a2" stroke-width="3" d="M8 -27q9 3 0 11"/><rect x="-8" y="-31" width="16" height="19" rx="3" fill="#ece7db" stroke="#b9b2a2" stroke-width="1.5"/>`,
   pen:`<path fill="none" stroke="#2f4f6c" stroke-width="3.4" stroke-linecap="round" d="M-3 -4L7 -36"/><path fill="none" stroke="#cfd4d8" stroke-width="3.4" stroke-linecap="round" d="M6.2 -33L7 -36"/>`,
+  // Added 2026-11-12. Each is drawn at the wrist with the hand pointing up, like the three above.
+  book:`<rect x="-13" y="-36" width="26" height="32" rx="2.5" fill="#b5533c" stroke="#8a3d2b" stroke-width="1.5"/><rect x="-13" y="-36" width="5" height="32" fill="#8a3d2b"/><rect x="-4" y="-29" width="13" height="4" rx="1" fill="#f1dfc0"/>`,
+  clipboard:`<rect x="-14" y="-40" width="28" height="36" rx="3" fill="#b89a72" stroke="#8e7758" stroke-width="1.5"/><rect x="-11" y="-35" width="22" height="28" rx="1" fill="#f7f4ec"/><rect x="-6" y="-43" width="12" height="6" rx="2" fill="#8c9197"/><path stroke="#b9bfc4" stroke-width="1.6" d="M-8 -29H8M-8 -24H8M-8 -19H4"/>`,
+  mic:`<rect x="-3.5" y="-26" width="7" height="24" rx="3" fill="#3a3d44"/><ellipse cx="0" cy="-33" rx="8" ry="9.5" fill="#70757d" stroke="#4b4f57" stroke-width="1.5"/><path stroke="#4b4f57" stroke-width="1" d="M-6 -36H6M-7 -32H7M-6 -28H6"/>`,
+  cup:`<path fill="#f3efe6" stroke="#bdb5a4" stroke-width="1.5" d="M-9 -34H9L7 -8H-7Z"/><rect x="-10" y="-37" width="20" height="5" rx="2" fill="#6b4a3a"/><rect x="-8" y="-26" width="16" height="9" fill="#c9a37a"/>`,
+  glass:`<path fill="#dcebee" fill-opacity=".75" stroke="#9fb4b9" stroke-width="1.5" d="M-8 -34H8L6 -8H-6Z"/><path fill="#8fc3d6" fill-opacity=".8" d="M-7 -24H7L6 -9H-6Z"/>`,
+  bottle:`<rect x="-6" y="-30" width="12" height="24" rx="3.5" fill="#8fc3d6" fill-opacity=".85" stroke="#6ea0b3" stroke-width="1.5"/><rect x="-3" y="-38" width="6" height="9" rx="1.5" fill="#8fc3d6" stroke="#6ea0b3" stroke-width="1.5"/><rect x="-3.5" y="-41" width="7" height="4" rx="1.5" fill="#3f6fa3"/><rect x="-6" y="-22" width="12" height="7" fill="#f7f4ec"/>`,
+  tablet:`<rect x="-15" y="-40" width="30" height="36" rx="3.5" fill="#2f3238"/><rect x="-12.5" y="-37" width="25" height="30" rx="1.5" fill="#a9d6cf"/>`,
+  folder:`<path fill="#e0b64f" stroke="#b58f33" stroke-width="1.5" d="M-15 -36H-4L-1 -40H15V-6H-15Z"/><path stroke="#b58f33" stroke-width="1.5" d="M-15 -31H15"/>`,
+  sandwich:`<path fill="#e3c08a" stroke="#b9945c" stroke-width="1.5" d="M-13 -22L0 -38L13 -22Z"/><path fill="#7fae5a" d="M-14 -22H14L12 -18H-12Z"/><path fill="#d9644a" d="M-12 -18H12L11 -15H-11Z"/><path fill="#e3c08a" stroke="#b9945c" stroke-width="1.5" d="M-13 -15H13L11 -8H-11Z"/>`,
+  apple:`<circle cx="0" cy="-19" r="10.5" fill="#c9433a" stroke="#9c2f29" stroke-width="1.5"/><path fill="none" stroke="#6b4a2f" stroke-width="2" stroke-linecap="round" d="M0 -29Q1 -34 4 -36"/><ellipse cx="6" cy="-34" rx="5" ry="2.6" fill="#7fae5a" transform="rotate(-25 6 -34)"/>`,
+  pizza:`<path fill="#f0c860" stroke="#c9963f" stroke-width="1.5" d="M-14 -34Q0 -41 14 -34L0 -4Z"/><path fill="none" stroke="#c9843f" stroke-width="4" stroke-linecap="round" d="M-13 -34Q0 -41 13 -34"/><circle cx="-3" cy="-26" r="3" fill="#c9433a"/><circle cx="5" cy="-22" r="2.6" fill="#c9433a"/><circle cx="0" cy="-15" r="2.4" fill="#c9433a"/>`,
+  gift:`<rect x="-13" y="-30" width="26" height="24" rx="2" fill="#6a5acd" stroke="#4d419b" stroke-width="1.5"/><rect x="-3" y="-30" width="6" height="24" fill="#f0c94a"/><rect x="-13" y="-21" width="26" height="5" fill="#f0c94a"/><path fill="none" stroke="#f0c94a" stroke-width="3" stroke-linecap="round" d="M0 -30Q-10 -42 -9 -32M0 -30Q10 -42 9 -32"/>`,
+  flowers:`<path fill="none" stroke="#5f8a4e" stroke-width="2.4" stroke-linecap="round" d="M0 -6V-26M-2 -8L-8 -26M2 -8L8 -26"/><circle cx="0" cy="-32" r="6" fill="#e8799a"/><circle cx="-10" cy="-30" r="5.5" fill="#f0c94a"/><circle cx="10" cy="-30" r="5.5" fill="#e06a4a"/><circle cx="0" cy="-32" r="2" fill="#f7e9b0"/><path fill="#e9dcc3" stroke="#bdb5a4" stroke-width="1.2" d="M-7 -16L7 -16L4 -3H-4Z"/>`,
+  remote:`<rect x="-6" y="-36" width="12" height="32" rx="4" fill="#3a3d44"/><circle cx="0" cy="-30" r="2.4" fill="#c9433a"/><path stroke="#8c9197" stroke-width="2" stroke-linecap="round" d="M-2.5 -23H2.5M-2.5 -18H2.5M-2.5 -13H2.5"/>`,
+  keys:`<circle cx="0" cy="-12" r="5.5" fill="none" stroke="#9aa0a6" stroke-width="2.2"/><path fill="none" stroke="#c9a84a" stroke-width="2.6" stroke-linecap="round" d="M2 -16L9 -31M9 -31L13 -29M7 -27L11 -25M-3 -16L-8 -30M-8 -30L-12 -28"/>`,
+  card:`<rect x="-12" y="-30" width="24" height="16" rx="2.5" fill="#3f6fa3" stroke="#2f5580" stroke-width="1.5"/><rect x="-12" y="-26" width="24" height="3.5" fill="#22334a"/><rect x="-9" y="-19" width="9" height="2.5" rx="1" fill="#dfe8f1"/>`,
+  trophy:`<path fill="#e0b64f" stroke="#b58f33" stroke-width="1.5" d="M-9 -40H9V-30Q9 -21 0 -20Q-9 -21 -9 -30Z"/><path fill="none" stroke="#b58f33" stroke-width="2.2" d="M-9 -37Q-16 -37 -15 -30Q-14 -25 -8 -26M9 -37Q16 -37 15 -30Q14 -25 8 -26"/><rect x="-2" y="-20" width="4" height="8" fill="#b58f33"/><rect x="-8" y="-12" width="16" height="6" rx="1.5" fill="#6b4a3a"/>`,
+  sign:`<rect x="-2" y="-30" width="4" height="26" fill="#a3855f"/><rect x="-22" y="-58" width="44" height="30" rx="3" fill="#f7f4ec" stroke="#bdb5a4" stroke-width="1.5"/><path stroke="#8c9197" stroke-width="2.4" stroke-linecap="round" d="M-14 -48H14M-14 -40H8"/>`
 };
 export const REST_FAR = { elbow:[70, 102], wrist:[13, 124], hand:'loose' };
 export const HEAD = 1.1; const CY = -58, EYE_Y = -62, EYE_W = 5.3, EYE_H = 7.4;
@@ -157,22 +227,48 @@ export function kit(P) {
     // Long hair falls in two locks beside the jaw and leaves the neck clear. One block under the chin read as a beard.
     // As the head turns, the lock on the side it faces narrows away and the one behind widens.
     const lock = side => { const width = side === facing ? (R*.56+6)*Math.max(0, 1-Math.abs(s)*1.8) : R*.56+6+Math.abs(s)*R*.5, o = side*(R+6)-s*6, i = o-side*width;
-      return width < 6 ? '' : `<path fill="${P.hair}" d="M${o} ${CY-12}V6Q${o} 22 ${(o+i)/2} 22Q${i} 22 ${i} 8V${CY-12}Z"/>`; };
-    const long = style.long ? lock(-1)+lock(1) : '';
+      return width < 6 ? '' : `<path fill="${P.hair}" d="M${o} ${CY-12}V${fall-16}Q${o} ${fall} ${(o+i)/2} ${fall}Q${i} ${fall} ${i} ${fall-14}V${CY-12}Z"/>`; };
+    const fall = style.fall ?? 22, long = style.long || style.fall !== undefined ? lock(-1)+lock(1) : '';
+    const tail = style.tail ? `<ellipse cx="${-s*(R+style.tail.out)}" cy="${CY+style.tail.y}" rx="${style.tail.rx}" ry="${style.tail.ry}" transform="rotate(${-s*14} ${-s*(R+style.tail.out)} ${CY+style.tail.y-style.tail.ry})" fill="${P.hair}"/>` : '';
     const bun = style.bun ? `<circle cx="${-s*12}" cy="${CY-RY-9}" r="15" fill="${P.hair}"/>` : '';
-    const back = style.bald ? '' : `${long}${bun}<ellipse cx="${-s*9}" cy="${CY-25}" rx="${R+style.rx}" ry="${style.ry}" fill="${P.hair}"/>${lift}`;
+    const pig = style.pig ? [-105, 105].map(degrees => { const x = (R+10)*Math.sin(yaw+rad(degrees)); return `<ellipse cx="${x}" cy="${CY+style.pig.y}" rx="${style.pig.rx}" ry="${style.pig.ry}" transform="rotate(${-x*.14} ${x} ${CY+style.pig.y-style.pig.ry})" fill="${P.hair}"/>`; }).join('') : '';
+    const block = style.block ? `<rect x="${-style.block.w-s*5}" y="${CY-RY-style.block.top+12}" width="${style.block.w*2}" height="${style.block.top+30}" rx="9" fill="${P.hair}"/>` : '';
+    // A mohawk is one ridge over a shaved head: narrow from the front, long from the side.
+    const crest = style.crest ? `<path fill="${P.hair}" d="M${-s*6-(10+Math.abs(s)*40)} ${CY-RY+16}Q${-s*6-(8+Math.abs(s)*30)} ${CY-RY-26} ${-s*6+Math.abs(s)*14} ${CY-RY-30}Q${-s*6+(9+Math.abs(s)*36)} ${CY-RY-24} ${-s*6+(10+Math.abs(s)*40)} ${CY-RY+16}Z"/>` : '';
+    const band = `<ellipse cx="${-s*9}" cy="${CY-1}" rx="${R+style.rx}" ry="${style.ry}" fill="${P.hair}"/>`;
+    const back = style.bald || style.dots ? '' : style.crest ? crest : style.band ? band : `${long}${tail}${pig}${block}${bun}<ellipse cx="${-s*9}" cy="${CY-25}" rx="${R+style.rx}" ry="${style.ry}" fill="${P.hair}"/>${lift}`;
     const sides = fill => `<ellipse cx="${-facing*R}" cy="${CY-24}" rx="${7+50*Math.abs(s)}" ry="${40+6*Math.abs(s)}" fill="${fill}"/>`+
       `<ellipse cx="${facing*R}" cy="${CY-24}" rx="${Math.max(0, 7-26*Math.abs(s))}" ry="40" fill="${fill}"/>`;
     const grey = `grey${serial++}`;
     const streaks = ears.map(item => [-7, -1, 5].map((dx, n) => `M${item.x*.96+dx} ${CY-20+n*3}Q${item.x*.96+dx-1.5} ${CY-8} ${item.x*.96+dx+.5} ${CY+6}`).join('')).join('');
-    const cover = style.bald ? '' : sides(P.hair)+(P.temple ? `<clipPath id="${grey}">${sides('#000')}</clipPath><g clip-path="url(#${grey})">${line(P.temple, 1.7, streaks)}</g>` : '');
-    const fringe = style.bald ? '' : `<g transform="translate(${s*7} 0)"><path fill="${P.hair}" d="${style.fringe}"/>${style.strands ? line(P.strand, 2, style.strands) : ''}</g>`;
+    const low = `<ellipse cx="${-facing*R}" cy="${CY-3}" rx="${9+46*Math.abs(s)}" ry="${30+4*Math.abs(s)}" fill="${P.hair}"/><ellipse cx="${facing*R}" cy="${CY-3}" rx="${Math.max(0, 9-26*Math.abs(s))}" ry="30" fill="${P.hair}"/>`;
+    // Stubble is a field of close dots over a faint tint of the hair colour, inside the same hairline as short hair.
+    const dotsId = `dots${serial++}`, dotFill = `url(#${dotsId})`;
+    const dotDefs = style.dots ? `<pattern id="${dotsId}" patternUnits="userSpaceOnUse" width="5.2" height="5.2"><circle cx="1.3" cy="1.3" r="1.15" fill="${P.hair}"/><circle cx="3.9" cy="3.9" r="1.15" fill="${P.hair}"/></pattern>` : '';
+    const cover = style.bald ? '' : style.dots ? `${dotDefs}<clipPath id="${dotsId}s"><path d="${egg}"/></clipPath><clipPath id="${dotsId}h" clip-path="url(#${dotsId}s)"><path d="${style.fringe}" transform="translate(${s*7} 0)"/>${sides('#000')}</clipPath>`+
+      `<g clip-path="url(#${dotsId}h)"><rect x="-95" y="-175" width="190" height="200" fill="${P.hair}" opacity=".13"/><rect x="-95" y="-175" width="190" height="200" fill="${dotFill}"/></g>` : style.band ? low : style.crest ? `<ellipse cx="${-s*6}" cy="${CY-RY+4}" rx="${10+Math.abs(s)*40}" ry="20" fill="${P.hair}"/>` : sides(P.hair)+(P.temple ? `<clipPath id="${grey}">${sides('#000')}</clipPath><g clip-path="url(#${grey})">${line(P.temple, 1.7, streaks)}</g>` : '');
+    const fringe = style.bald ? '' : style.dots ? '' : `<g transform="translate(${s*7} 0)"><path fill="${P.hair}" d="${style.fringe}"/>${style.strands ? line(P.strand, 2, style.strands) : ''}</g>`;
     const nose = oval(P.skin, P.skinShade, s*(R+1.5), -47, 6.2, 5.2);
-    const lips = `<g transform="translate(${R*.74*Math.sin(yaw*.9)} -27) scale(${Math.max(.66, c)} 1)">${mouths[mouth]}</g>`;
+    const mx = R*.74*Math.sin(yaw*.9), squeeze = Math.max(.66, c);
+    const lips = `<g transform="translate(${mx} -27) scale(${squeeze} 1)">${mouths[mouth]}</g>`;
+    // Facial hair (2026-11-12). A beard covers the lower face inside the head's outline and leaves a patch of skin round
+    // the mouth, so the mouth shapes stay readable. Stubble is the same area in close dots. A goatee is the chin only.
+    const faceClip = `face${serial++}`, shadeId = `shade${serial++}`;
+    const lower = `M-90 -40Q${mx} -30 90 -40V40H-90Z`, patch = `<ellipse cx="${mx}" cy="-25" rx="${17*squeeze}" ry="10.5" fill="${P.skin}"/>`;
+    const beard = !P.beard ? '' : `<clipPath id="${faceClip}"><path d="${egg}"/></clipPath><g clip-path="url(#${faceClip})">`+
+      (P.beard === 'stubble' ? `<pattern id="${shadeId}" patternUnits="userSpaceOnUse" width="5.2" height="5.2"><circle cx="1.3" cy="1.3" r="1.1" fill="${P.hair}"/><circle cx="3.9" cy="3.9" r="1.1" fill="${P.hair}"/></pattern><path d="${lower}" fill="${P.hair}" opacity=".12"/><path d="${lower}" fill="url(#${shadeId})"/>`
+        : P.beard === 'goatee' ? `<ellipse cx="${mx*.92}" cy="-6" rx="${15*squeeze}" ry="15" fill="${P.hair}"/>${patch}`
+        : `<path d="${lower}" fill="${P.hair}"/>${patch}`)+`</g>`;
+    const tash = P.moustache ? `<g transform="translate(${mx} -37) scale(${squeeze} 1)"><path fill="${P.hair}" d="M-15 3Q-9 -6 0 -2Q9 -6 15 3Q8 1 0 2Q-8 1 -15 3Z"/></g>` : '';
+    // Headwear sits over the hair: a beanie is a dome with a turned-up band, a cap is a lower dome with a peak on the side they face.
+    const hatClip = `hat${serial++}`, hatFill = P.hatColour ?? '#4a5a6a', hatEdge = P.hatShade ?? '#3a4855';
+    const dome = cut => `<clipPath id="${hatClip}"><path d="${egg}" transform="translate(0 ${CY}) scale(1.09) translate(0 ${-CY})"/></clipPath><g clip-path="url(#${hatClip})"><rect x="-90" y="-200" width="180" height="${200+cut}" fill="${hatFill}"/></g>`;
+    const hat = P.hat === 'beanie' ? dome(-88)+`<rect x="${-R-6}" y="-99" width="${2*R+12}" height="13" rx="6" fill="${hatEdge}"/><circle cx="${-s*4}" cy="${CY-RY-9}" r="9" fill="${hatEdge}"/>`
+      : P.hat === 'cap' ? dome(-92)+`<ellipse cx="${s*(R*.9)+(1-Math.abs(s))*0}" cy="-92" rx="${R*(.86-Math.abs(s)*.3)}" ry="7.5" fill="${hatEdge}"/><circle cx="${-s*4}" cy="${CY-RY-4}" r="3.5" fill="${hatEdge}"/>` : '';
     return `<g transform="translate(0 ${bob}) rotate(${tilt})">${back}${ears.filter(e => !e.over).map(e => e.art).join('')}`+
       `<clipPath id="${id}"><path d="${egg}" transform="translate(0 ${CY}) scale(1.04) translate(0 ${-CY})"/></clipPath>`+
       shape(P.skin, P.skinShade, egg)+`<g clip-path="url(#${id})">${cover}${fringe}</g>`+
-      ears.filter(e => e.over).map(e => e.art).join('')+spots.map(eye).join('')+glasses+lips+nose+`</g>`;
+      beard+ears.filter(e => e.over).map(e => e.art).join('')+hat+spots.map(eye).join('')+glasses+tash+lips+nose+`</g>`;
   }
 
   // Hands: a mitten, an open hand and a pointing hand. Origin is the wrist; the hand points up.
@@ -183,6 +279,13 @@ export function kit(P) {
     loose:nub(-8, -8, 6, -62, 6)+mitt,
     open:nub(-8, -8, 8, -62, 6)+nub(-6.5, -15, 9, -16)+nub(-2.2, -17, 11, -5)+nub(2.4, -17, 10.5, 6)+nub(6.6, -15, 8, 17)+mitt,
     point:nub(-3, -15, 15, -3, 6)+nub(-8, -8, 5, -62, 6)+mitt+line(P.skinShade, 1.5, 'M1 -17Q5 -14 6 -9'),
+    // Counting hands, a fist, a thumbs up, and two bent fingers for air quotes.
+    one:nub(-3, -15, 15, -3, 6)+nub(-8, -8, 5, -62, 6)+mitt+line(P.skinShade, 1.5, 'M1 -17Q5 -14 6 -9'),
+    two:nub(-5, -15, 15, -9, 5.8)+nub(2, -16, 15, 7, 5.8)+nub(-8, -8, 5, -62, 6)+mitt+line(P.skinShade, 1.5, 'M5 -16Q8 -13 8 -8'),
+    three:nub(-6, -15, 14, -13, 5.6)+nub(-1, -17, 15.5, -1, 5.6)+nub(4.5, -15.5, 14, 11, 5.6)+nub(-8, -8, 5, -62, 6)+mitt,
+    quote:nub(-5, -15, 8, -9, 5.8)+nub(2, -16, 8, 7, 5.8)+nub(-8, -8, 5, -62, 6)+mitt+line(P.skinShade, 1.5, 'M5 -16Q8 -13 8 -8'),
+    fist:nub(-8, -9, 4, -70, 6)+mitt+line(P.skinShade, 1.5, 'M-5 -17Q0 -15 5 -17M-3 -12H5'),
+    thumb:nub(-7, -15, 14, -12, 6.6)+mitt+line(P.skinShade, 1.5, 'M-1 -15Q4 -13 6 -9M-1 -10H6'),
   };
   // One curve from shoulder to wrist that bends at the elbow, ending in a hand drawing.
   function arm(shoulder, elbow, wrist, handName, prop) {
@@ -212,22 +315,32 @@ export function kit(P) {
   const neck = shape(P.skin, P.skinShade, 'M-12 -12V8Q0 14 12 8V-12Z');
   const hood = P.front === 'hoodie' ? `<ellipse cx="0" cy="5" rx="33" ry="15" fill="${P.topShade}"/>` : '';
   const phones = P.headphones ? line('#33333b', 7, 'M-25 3Q0 30 25 3')+oval('#44444f', '#2a2a31', -27, 4, 8, 12)+oval('#44444f', '#2a2a31', 27, 4, 8, 12) : '';
-  function legs(turn = 0) {
+  // `stride` is where a walker is in their step, in radians: each foot lifts in turn. Undefined means standing still.
+  function legs(turn = 0, stride) {
     const gap = 17-Math.abs(turn)*9, toe = turn*9;
-    return [-1, 1].map(side => tube(`M${side*gap} 126V262`, 21, P.legs, P.legsShade)+oval(P.shoe, P.shoeShade, side*gap+toe+side*3, 270, 19, 9)).join('');
+    return [-1, 1].map(side => { const lift = stride === undefined ? 0 : Math.max(0, side*Math.sin(stride))*13, reach = stride === undefined ? 0 : side*Math.cos(stride)*5*Math.sign(turn || 1);
+      return tube(`M${side*gap} 126L${side*gap+reach} ${262-lift}`, 21, P.legs, P.legsShade)+oval(P.shoe, P.shoeShade, side*gap+toe+side*3+reach, 270-lift, 19, 9); }).join('');
   }
-  // The acting figure, seated behind a table or standing with legs. The near arm is the screen-left one.
-  function figure({ elbow, wrist, hand, prop, far = REST_FAR, standing = false, turn = .55, look, mouth, gaze, lid, brow, tilt = 0, bob = 0, lean = 0, breath = 0 }) {
+  // Legs of someone sitting on a sofa or bench, seen from the front: the thighs point at the viewer, so each is
+  // a rounded knee over the lap, with the shin hanging below it. Drawn over the body's hem. Feet land at y 238.
+  function sitLegs(turn = 0) {
+    const gap = 19-Math.abs(turn)*7, toe = turn*10;
+    return [-1, 1].map(side => tube(`M${side*gap+toe*.4} 150V226`, 20, P.legs, P.legsShade)+oval(P.shoe, P.shoeShade, side*gap+toe+side*3, 238, 19, 9.5)).join('')+
+      [-1, 1].map(side => oval(P.legs, P.legsShade, side*gap, 143, 15, 17)).join('');
+  }
+  // The acting figure: seated behind a table, standing with legs, or (sitting) on a seat with legs in view.
+  // The near arm is the screen-left one.
+  function figure({ elbow, wrist, hand, prop, farProp, far = REST_FAR, over = false, standing = false, sitting = false, stride, turn = .55, look, mouth, gaze, lid, brow, tilt = 0, bob = 0, lean = 0, breath = 0 }) {
     // A soft shadow under the feet keeps a standing figure on the floor. Some people always hold something.
-    const shadow = standing ? `<ellipse cx="0" cy="273" rx="46" ry="8" fill="#1d2420" opacity=".13"/>` : '', held = prop ?? P.holds?.[standing ? 'standing' : 'seated'];
-    return `<g transform="rotate(${lean})">${shadow}${standing ? legs(turn) : ''}${hood}${neck}<g transform="translate(0 ${-breath})">${body(turn)}${phones}</g>${arm(FAR, far.elbow, far.wrist, far.hand)}${arm(NEAR, elbow, wrist, hand, held)}`+
-      `<g transform="translate(0 ${-2-breath*1.4}) scale(${HEAD})">${head({ turn, look, mouth, gaze, lid, brow, tilt, bob })}</g></g>`;
+    const shadow = standing ? `<ellipse cx="0" cy="${sitting ? 242 : 273}" rx="46" ry="8" fill="#1d2420" opacity=".13"/>` : '', held = prop ?? P.holds?.[standing && !sitting ? 'standing' : 'seated'];
+    return `<g transform="rotate(${lean})">${shadow}${standing && !sitting ? legs(turn, stride) : ''}${hood}${neck}<g transform="translate(0 ${-breath})">${body(turn)}${phones}</g>${sitting ? sitLegs(turn) : ''}${arm(FAR, far.elbow, far.wrist, far.hand, farProp)}${over ? '' : arm(NEAR, elbow, wrist, hand, held)}`+
+      `<g transform="translate(0 ${-2-breath*1.4}) scale(${HEAD})">${head({ turn, look, mouth, gaze, lid, brow, tilt, bob })}</g>${over ? arm(NEAR, elbow, wrist, hand, held) : ''}</g>`;
   }
   // The same person from behind, for the near edge of someone else's shot.
   function behind() {
     const top = CY-RY, chin = CY+RY, id = `back${serial++}`;
     const egg = `M0 ${top}C${R*.92} ${top} ${R} ${CY-32} ${R} ${CY-8}C${R} ${CY+30} ${R*.52} ${chin} 0 ${chin}C${-R*.52} ${chin} ${-R} ${CY+30} ${-R} ${CY-8}C${-R} ${CY-32} ${-R*.92} ${top} 0 ${top}Z`;
-    const long = style.long ? `<path fill="${P.hair}" d="M${-R-6} ${CY-12}V8Q${-R-6} 24 ${-R+12} 24H${R-12}Q${R+6} 24 ${R+6} 8V${CY-12}Z"/>` : '';
+    const long = style.long || style.fall !== undefined ? `<path fill="${P.hair}" d="M${-R-6} ${CY-12}V8Q${-R-6} 24 ${-R+12} 24H${R-12}Q${R+6} 24 ${R+6} 8V${CY-12}Z"/>` : '';
     const bun = style.bun ? `<circle cx="0" cy="${CY-RY-9}" r="15" fill="${P.hair}"/>` : '';
     const hair = style.bald ? '' : `<clipPath id="${id}"><path d="${egg}" transform="translate(0 ${CY}) scale(1.05) translate(0 ${-CY})"/></clipPath>`+
       `<g clip-path="url(#${id})"><ellipse cx="0" cy="${CY-20}" rx="${R+8}" ry="${RY*.92}" fill="${P.hair}"/></g>`;
@@ -291,7 +404,7 @@ function direct(cut, lines, extra, ids, place, seated, known) {
     }
     beats.sort((a, b) => a.frame-b.frame);
     let state = { pose:'rest', look:'neutral', facing:home(id), down:false, up:false, rest:null, closed:false, rise:0, step:0, inward:0 };
-    const snaps = [{ frame:0, state }], flickers = [];
+    const snaps = [{ frame:0, state }], flickers = [], walks = [];
     for (const beat of beats) {
       const next = { ...state };
       if (beat.action === 'mood') next.look = moodLooks[beat.arg] ?? 'neutral';
@@ -299,6 +412,7 @@ function direct(cut, lines, extra, ids, place, seated, known) {
       else if (beat.action === 'pose' && (bodies[beat.arg] || beat.arg === 'rest')) next.pose = beat.arg;
       else if (beat.action === 'rest' && mouths[beat.arg]) next.rest = beat.arg;
       else if (beat.action === 'mouth') next.rest = beatMouths[beat.arg] ?? null;
+      else if (beat.action === 'hold') next.hold = props[beat.arg] ? beat.arg : null;
       else if (beat.action === 'eyes-closed') next.closed = true;
       else if (beat.action === 'eyes-open') next.closed = false;
       else if (beat.action === 'half-rise') next.rise = -14;
@@ -312,21 +426,35 @@ function direct(cut, lines, extra, ids, place, seated, known) {
         else if (beat.arg === 'interviewer') next.facing = id === 'ch002' ? -.3 : .3;
         else if (next.down) next.facing = home(id)*.5;
       } else if (['nod', 'shake-head', 'eyeroll'].includes(beat.action)) flickers.push({ frame:beat.frame, kind:beat.action });
+      // A walk slides the figure sideways from one offset to another over some frames, stepping as it goes.
+      else if (beat.action === 'walk' && beat.arg) walks.push({ frame:beat.frame, from:beat.arg.from, to:beat.arg.to, frames:Math.max(1, beat.arg.frames) });
       state = next;
       if (beat.frame <= 0) snaps[0].state = state; else if (snaps.at(-1).frame === beat.frame) snaps.at(-1).state = state; else snaps.push({ frame:beat.frame, state });
     }
-    return { id, order, snaps, flickers, ...place(id), standing:!seated, speech:lines.filter(line => line.character === id) };
+    // Timed eye acting owns the eyelids. The automatic blink is held off while a wink or closed eyes are on, and for
+    // 14 frames either side, or a blink landing on a wink reads as both eyes closing (seen 2026-11-12).
+    const calm = snaps.map((snap, i) => snap.state.look === 'wink' || snap.state.closed ? [snap.frame-14, (snaps[i+1]?.frame ?? Infinity)+14] : null).filter(Boolean);
+    return { id, order, snaps, flickers, walks, calm, ...place(id), standing:!seated, speech:lines.filter(line => line.character === id) };
   });
 }
 
 function actorAt(kits, actor, at, cut, clock) {
   const index = actor.snaps.findLastIndex(snap => snap.frame <= at), now = actor.snaps[index], before = actor.snaps[index-1] ?? now;
-  const t = index ? settle((at-now.frame)/MOVE) : 1, s = now.state, p = before.state, pose = poseOf(s.pose, actor.standing), from = poseOf(p.pose, actor.standing);
+  const upright = actor.standing && !actor.sitting;   // someone sitting on a sofa uses the seated arm poses, hands in the lap
+  const t = index ? settle((at-now.frame)/MOVE) : 1, s = now.state, p = before.state, pose = poseOf(s.pose, upright), from = poseOf(p.pose, upright);
   const seconds = clock/FPS, flip = actor.flip ? -1 : 1;
   const line = actor.speech.find(item => cut.from+at >= item.startFrame && cut.from+at < item.endFrame);
   const cueOf = frame => { if (!line) return 'X'; const sec = (cut.from+frame-line.startFrame)/FPS; return line.cues.find(([start, end]) => sec >= start && sec < end)?.[2] ?? 'X'; };
   const cue = cueOf(at), voice = [-2, -1, 0, 1, 2].reduce((sum, d) => sum+openness[cueOf(at+d)], 0)/5;
   let facing = mix(p.facing, s.facing, t), bob = 1.8*voice, gaze = [0, s.down ? 5 : s.up ? -6 : 0];
+  // Where a walk has got to: before the first one starts the figure waits at its starting offset, which may be out of frame.
+  let shift = 0, stride;
+  for (const walk of actor.walks ?? []) {
+    if (at < walk.frame) { if (walk === actor.walks[0]) shift = walk.from; break; }
+    const done = Math.min(1, (at-walk.frame)/walk.frames);
+    shift = mix(walk.from, walk.to, smooth(done));
+    if (done < 1 && walk.from !== walk.to) { const steps = Math.max(2, Math.round(Math.abs(walk.to-walk.from)/85)); stride = done*steps*Math.PI; facing = Math.sign(walk.to-walk.from)*.8; bob += 3.5*Math.abs(Math.sin(stride)); }
+  }
   // Small unprompted life. A speaker shifts on each new phrase and now and then lifts a hand; listeners nod.
   const mine = actor.phrases.filter(mark => mark.who === actor.id && mark.frame <= at), heard = actor.phrases.findLast(mark => mark.who !== actor.id && mark.frame <= at);
   const sway = [0, 3, -2, 2.5, -3], since = mine.length ? at-mine.at(-1).frame : 99;
@@ -340,18 +468,28 @@ function actorAt(kits, actor, at, cut, clock) {
     if (flicker.kind === 'nod' && d < .62) bob += 5*Math.sin(Math.PI*d/.62);
     if (flicker.kind === 'eyeroll' && d < .78) gaze = [gaze[0], gaze[1]-8*Math.sin(Math.PI*d/.78)];
   }
-  const blink = (clock+actor.order*29+actor.id.charCodeAt(actor.id.length-1)*7)%79, lid = s.closed ? 1 : blink < 4 ? [.6, 1, 1, .6][blink] : s.down ? .4 : undefined;
+  const blink = (clock+actor.order*29+actor.id.charCodeAt(actor.id.length-1)*7)%79, steady = actor.calm?.some(([from, to]) => at >= from && at <= to), lid = s.closed ? 1 : blink < 4 && !steady ? [.6, 1, 1, .6][blink] : s.down ? .4 : undefined;
   const tap = pose.typing ? 2.2*Math.sin(clock*1.7) : 0, lift = ['rest', 'type', 'pockets', 'cross'].includes(s.pose) ? 0 : 2.5*voice;
-  const wrist = mixPoint(from.wrist, pose.wrist, t), farWrist = mixPoint(from.far.wrist, pose.far.wrist, t), half = !index || (at-now.frame)/MOVE >= .45;
+  // Someone holding a thing who needs that hand, for a gesture or for a pose that brings its own prop, carries the
+  // thing in the other hand meanwhile. If the pose uses both hands, the thing is not drawn until the hands are free.
+  const CARRY_FAR = { elbow:[80, 98], wrist:[94, 46], hand:'loose' };
+  const shifted = (made, name, hold) => { const busy = hold && (made.hand !== 'loose' || (made.prop && made.prop !== hold)) && !['carry', 'micup', 'show'].includes(name), own = Boolean(bodies[name]?.far);
+    return busy ? { ...made, far:own ? made.far : CARRY_FAR, farProp:own ? undefined : hold, nearProp:made.prop } : { ...made, farProp:undefined, nearProp:made.prop ?? hold ?? undefined }; };
+  const poseH = shifted(pose, s.pose, s.hold), fromH = shifted(from, p.pose, p.hold);
+  const wrist = mixPoint(from.wrist, pose.wrist, t), farWrist = mixPoint(fromH.far.wrist, poseH.far.wrist, t), half = !index || (at-now.frame)/MOVE >= .45;
   const rise = mix(p.rise, s.rise, t), step = mix(p.step, s.step, t), k = actor.k*(1+.06*step);
   const art = kits[actor.id].figure({
-    standing:actor.standing, elbow:mixPoint(from.elbow, pose.elbow, t), wrist:[wrist[0]-8*beat, wrist[1]-lift+tap-18*beat], hand:beat > .3 ? 'open' : half ? pose.hand : from.hand, prop:half ? pose.prop : from.prop,
-    far:{ elbow:mixPoint(from.far.elbow, pose.far.elbow, t), wrist:[farWrist[0], farWrist[1]-tap], hand:half ? pose.far.hand : from.far.hand },
+    standing:actor.standing, sitting:actor.sitting, stride, elbow:mixPoint(from.elbow, pose.elbow, t), wrist:[wrist[0]-8*beat, wrist[1]-lift+tap-18*beat], hand:beat > .3 && !s.hold ? 'open' : half ? pose.hand : from.hand, prop:half ? poseH.nearProp : fromH.nearProp, farProp:half ? poseH.farProp : fromH.farProp,
+    far:{ elbow:mixPoint(fromH.far.elbow, poseH.far.elbow, t), wrist:[farWrist[0], farWrist[1]-tap], hand:half ? poseH.far.hand : fromH.far.hand }, over:Boolean(half ? pose.front : from.front),
     turn:flip*facing, look:s.look, lid, gaze, brow:line ? 2.2*voice : 0, mouth:cue === 'X' ? s.rest ?? expressions[s.look].mouth : cue,
     tilt:mix(from.tilt ?? 0, pose.tilt ?? 0, t)+accent+(s.down ? 4 : s.up ? -4 : 0)+1.4*(voice-.3)*(line ? 1 : 0)+.5*Math.sin(seconds*1.9+actor.order),
     lean:mix(p.inward, s.inward, t)*Math.sign(facing || 1)*flip+.45*Math.sin(seconds*1.2+1+actor.order*2), bob, breath:1.1*Math.sin(seconds*1.75+actor.order),
   });
-  return `<g transform="translate(${actor.x} ${actor.y+rise+6*step}) scale(${flip*k} ${k})">${art}</g>`;
+  const drawn = `<g transform="translate(${actor.x+shift} ${actor.y+rise+6*step}) scale(${flip*k} ${k})">${art}</g>`;
+  // A mark can carry a box the figure is cropped to, as [left, top, width, height]: a webcam tile on a video call.
+  if (!actor.clip) return drawn;
+  const box = `crop${serial++}`, [bx, by, bw, bh] = actor.clip;
+  return `<clipPath id="${box}"><rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10"/></clipPath><g clip-path="url(#${box})">${drawn}</g>`;
 }
 
 // Build a scene once, then ask it for any frame. The same code runs in Node and in the Studio page.
@@ -369,7 +507,7 @@ export function createScene({ timeline, acting = {}, kits, asset = name => name 
       if (cabin) return { x:1452, y:CABIN_CHIN, k:FIG, flip:MIRRORED.has(id) };
       if (tuned) return { x:seats[id], y:CHIN, k:FIG, flip:MIRRORED.has(id) };
       if (meeting) return { x:mark.x, y:CHIN, k:FIG*mark.scale, flip:MIRRORED.has(id) !== Boolean(mark.mirror) };
-      return { x:mark.x, y:mark.y+2*mark.scale, k:mark.scale, flip:Boolean(mark.mirror) }; };
+      return { x:mark.x, y:mark.y+2*mark.scale, k:mark.scale, flip:Boolean(mark.mirror), sitting:Boolean(mark.sit), clip:mark.clip }; };
     const actors = direct(cut, lines, acting[cut.id], ids, place, seated, id => Boolean(kits[id]));
     // Where each new phrase starts: the line's start and the end of every pause inside it.
     const phrases = lines.flatMap(line => [0, ...line.cues.filter(([start, end, shape]) => shape === 'X' && end-start > .14 && start > .05).map(([, end]) => end)]
